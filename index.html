@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Prototype</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #f4f4f4;
+    }
+
+    .wrapper {
+      width: 1440px;
+      height: 900px;
+      transform-origin: top left;
+      display: flex;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .cart {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #FFF9E6;
+      padding: 16px;
+      max-width: 20%;
+    }
+
+    .cart h2 { 
+      margin: 0 0 12px; 
+      border-bottom: 2px solid #ccc; 
+      padding-bottom: 8px; 
+    }
+    .cart-items { 
+      flex: 1; 
+      overflow-y: auto; 
+    }
+    .cart-item {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 8px; 
+      background: #fff; 
+      padding: 8px; 
+      border-radius: 6px; 
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+    .cart-item button { 
+      background: #e74c3c; 
+      color: white; 
+      border: none; 
+      padding: 4px 8px; 
+      border-radius: 4px; 
+      cursor: pointer; }
+
+    .totals { 
+      border-top: 2px solid #ccc; 
+      padding-top: 12px;
+      font-size: 18px;
+      font-weight: bold; 
+    }
+
+    .main { 
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      background: #FFFDF5;
+    }
+
+    .top-tabs, .bottom-tabs {
+      display: flex;
+      justify-content: space-around;
+      background: #ddd;
+      padding: 8px;
+    }
+
+    .top-tabs button, .bottom-tabs button, .modifiers button {
+      flex: 1;
+      margin: 0 4px;
+      padding: 10px; 
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .top-tabs button.active {
+      background: #bbb;
+    }
+
+    .bottom-tabs button.active, .modifiers button.active { 
+      background: #FFFDF5;
+    }
+
+    .modifiers { 
+      width: 9%;
+      display: flex;
+      flex-direction: column;
+      background: #eee;
+      padding: 8px;
+    }
+
+    .products { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: space-between; 
+      padding: 10px; 
+      overflow-y: auto;
+    }
+
+    .product-row { 
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      flex: 1;
+    }
+
+    .custom-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      margin-bottom: 1.5%;
+      flex: 1;
+    }
+
+    .custom-row .product, .milk .product {
+      margin: 0;
+    }
+
+    .blended {
+      margin-bottom: 50px;
+    }
+
+    .product { 
+      color: black;
+      font-size: 0.9em;
+      font-weight: bold;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid black;
+      opacity: 0.8;
+      margin: 5% 10% 5% 10%;
+    }
+    
+    .blank { background: transparent; pointer-events: none; border: none; }
+
+    .light-blue { background: rgba(120,173,204,0.8); }
+    .light-yellow { background: rgba(255,229,140,0.8); }
+    .yellow { background: rgba(255,229,140,1); }
+    .grey { background: rgba(163,163,163,0.8); }
+    .purple { background: rgba(175,166,237,0.8); }
+    .brown { background: rgba(148,119,90,0.8); }
+    .light-brown { background: rgba(181,160,139,0.8); }
+    .teal { background: rgba(184,230,213,0.8); }
+    .green { background: rgba(131, 156, 107,0.8); }
+    .bright-green { background: #87c393; }
+    .silver { background: rgba(227,227,227,0.8); }
+    .black { background: #000; color: #fff; }
+    .seasonal-row { background: #DFF5E0; margin-bottom: -0.75%;}
+
+    .cart-modifiers {
+      font-size: 0.9em;
+      color: #555;
+      margin-left: 15px;
+      margin-top: 3px;
+      margin-bottom: 8px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .cart-item.preview + .cart-modifiers.preview {
+      background: #89c499;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      white-space: nowrap;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="cart">
+      <h2>Order</h2>
+      <div class="cart-items" id="cartItems"></div>
+      <div class="totals" id="totals">Total: $0.00</div>
+    </div>
+
+    <div class="main">
+      <div class="top-tabs">
+        <button onclick="selectTopTab(this)" id="misc">Misc</button>
+        <button onclick="selectTopTab(this)" id="beans">Beans</button>
+        <button onclick="selectTopTab(this)" id="rtd">RTD&E</button>
+        <button onclick="selectTopTab(this)" id="food">Food</button>
+        <button onclick="selectTopTab(this)" id="drink">Drink</button>
+      </div>
+
+      <div class="products" id="main-grid"></div>
+
+      <div class="bottom-tabs">
+        <button onclick="selectBottomTab(this, 'brewed')">Brewed</button>
+        <button onclick="selectBottomTab(this, 'espresso')">Espresso</button>
+        <button onclick="selectBottomTab(this, 'blended')">Blended</button>
+        <button onclick="selectBottomTab(this, 'tea')">Tea</button>
+        <button onclick="selectBottomTab(this, 'other')">Other</button>
+      </div>
+    </div>
+
+    <div class="modifiers">
+      <button onclick="selectRightTab(this, 'decafShots')">Decaf / Shots / Size</button>
+      <button onclick="selectRightTab(this, 'syrup')">Syrup</button>
+      <button onclick="selectRightTab(this, 'milk')">Milk</button>
+      <button onclick="selectRightTab(this, 'custom')">Custom</button>
+    </div>
+  </div>
+
+  <script>
+    // Keep consistent size regardless of viewport
+    function resize() {
+      const wrapper = document.querySelector(".wrapper");
+      const scaleX = window.innerWidth / 1440;
+      const scaleY = window.innerHeight / 900;
+      const scale = Math.min(scaleX, scaleY);
+      wrapper.style.transform = `scale(${scale})`;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const brewedButtons = `
+      <div class="custom-row">
+        <div class="product black" onclick=""><i>Pour Over,<br>Regional<br>& Test</i></div>
+      </div>
+      <div class="custom-row">
+        <div class="product light-blue" onclick="addToCart('Iced Coffee')">Bunn<br>Iced Coffee</div>
+        <div class="product light-blue" onclick="addToCart('Iced Coffee Refill')">Bunn<br>Iced Coffee<br>Refill</div>
+        <div class="product light-blue" onclick="addToCart('Iced Coffee')">Vertica<br>Iced Coffee</div>
+        <div class="product light-blue" onclick="addToCart('Iced Coffee Refill')">Vertica<br>Iced Coffee<br>Refill</div>
+        <div class="blank"></div>
+      <div class="blank"></div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product silver" onclick="addToCart('Cold Brew')">Cold Brew</div>
+        <div class="product brown" onclick="addToCart('ND Vanilla Sweet Cream Cold Brew')">ND Vanilla<br>Sweet Cream<br>Cold Brew</div>
+        <div class="product brown" onclick="addToCart('ND Salted Caramel Cold Brew')">ND Salted<br>Caramel<br>Cold Brew</div>
+        <div class="product brown" onclick="addToCart('ND Chocolate Cream CF Cold Brew')">ND Chocolate<br>Cream Cold<br>Brew</div>
+        <div class="product brown" onclick="addToCart('ND Vanilla Cream CF Cold Brew')">Cold Brew w/<br>ND Vanilla<br>Cream CF</div>
+      <div class="blank"></div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product silver" onclick="addToCart('Vanilla Sweet Cream Cold Brew')">Vanilla Sweet<br>Cream<br>Cold Brew</div>
+        <div class="product silver" onclick="addToCart('Salted Caramel Cream Cold Brew')">Salted<br>Caramel<br>Cold Brew</div>
+        <div class="product silver" onclick="addToCart('Chocolate Cream Cold Brew')">Chocolate Cream Cold Brew</div>
+        <div class="product silver" onclick="addToCart('ND Chocolate Cream CF Cold Brew')">ND Chocolate<br>Cream Cold<br>Brew</div>
+        <div class="product silver" onclick="addToCart('Pumpkin Cream Cold Brew')">Pumpkin<br>Cream<br>Cold Brew</div>
+      <div class="blank"></div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product silver" onclick="addToCart('Nitro Cold Brew')">Nitro<br>Cold Brew</div>
+        <div class="product silver" onclick="addToCart('Vanilla Sweet Cream Nitro Cold Brew')">Vanilla Sweet<br>Cream Nitro<br>Cold Brew</div>
+        <div class="product brown" onclick="addToCart('Chocolate<br>Protein<br>Cold Brew')">Chocolate Protein Cold Brew</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      <div class="blank"></div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product grey" onclick="addToCart('Pike Place')">Pike Place<br>Vertica</div>
+        <div class="product purple" onclick="addToCart('Verona (Dark Roast)')">Caffe Verona<br>Vertica</div>
+        <div class="product light-yellow" onclick="addToCart('Veranda (Blonde Roast)')">Veranda<br>Clover<br>Vertica</div>
+        <div class="product light-blue" onclick="addToCart('Decaf Pike Place')">Decaf<br>Pike Place<br>Vertica</div>
+        <div class="product grey" onclick="addToCart('Casi Cielo<br>Vertica')">Casi Cielo (Medium Roast)</div>
+      <div class="blank"></div>
+      </div>
+
+       <div class="custom-row">
+        <div class="product grey" onclick="addToCart('Pike Place')">Pike Place<br>Bunn</div>
+        <div class="product purple" onclick="addToCart('Dark Roast')">Dark Roast<br>Bunn</div>
+        <div class="product light-yellow" onclick="addToCart('Blonde Roast')">Blonde<br>Roast<br>Bunn</div>
+        <div class="product light-blue" onclick="addToCart('Decaf Pike Place')">Decaf<br>Pike Place<br>Bunn</div>
+        <div class="product grey" onclick="addToCart('Hot Coffee Refill')">Hot Coffee Refill</div>
+      <div class="product grey" onclick="addToCart('Caffe Misto')">Caffe Misto</div>
+      </div>
+      `;
+
+    const espressoButtons = `
+      <div class="product-row">
+        <div class="product purple" onclick="addToCart('Americano')">Americano</div>
+        <div class="product purple" onclick="addToCart('Espresso')">Espresso</div>
+        <div class="product purple" onclick="addToCart('Espresso Macchiato')">Espresso<br>Macchiato</div>
+        <div class="product purple" onclick="addToCart('Espresso<br>Con Panna')">Espresso<br>Con Panna</div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product purple" onclick="addToCart('Iced<br>Shaken Espresso')">Iced<br>Shaken Espresso</div>
+        <div class="product purple" onclick="addToCart('Brown Sugar Oat<br>Shaken Espresso')">Brown Sugar Oat<br>Shaken Espresso</div>
+        <div class="product purple" onclick="addToCart('Iced Hazelnut<br>Oatmilk Shaken Esp')">Iced Hazelnut<br>Oatmilk Shaken<br>Esp</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product light-yellow" onclick="addToCart('Latte')">Latte</div>
+        <div class="product light-yellow" onclick="addToCart('Cinnamon Dolce Latte')">Cinnamon Dolce Latte</div>
+        <div class="product grey" onclick="addToCart('Cappuccino')">Cappuccino</div>
+        <div class="product silver" onclick="addToCart('Flat White')">Flat White</div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product light-yellow" onclick="addToCart('Blonde Vanilla Latte')">Blonde Vanilla<br>Latte</div>
+        <div class="product light-yellow" onclick="addToCart('Iced Vanilla Cream Protein Latte')">Iced Vanilla<br>Cream<br>Protein Latte</div>
+        <div class="product light-yellow" onclick="addToCart('Vanilla Protein Latte')">Vanilla<br>Protein Latte</div>
+        <div class="product light-yellow" onclick="addToCart('SF Vanilla Protein Latte')">SF Vanilla<br>Protein Latte</div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product purple" onclick="addToCart('Caramel<br>Macchiato')">Caramel<br>Macchiato</div>
+        <div class="product silver" onclick="addToCart('Cortado')">Cortado</div>
+        <div class="product silver" onclick="addToCart('Brown Sugar Oat<br>Cortado')">Brown Sugar Oat<br>Cortado</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product brown" onclick="addToCart('Mocha')">Mocha</div>
+        <div class="product brown" onclick="addToCart('White Chocolate<br>Mocha')">White Chocolate<br>Mocha</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row seasonal-row">
+        <div class="product light-yellow" onclick="addToCart('Seasonal Drink')">Seasonal Drink</div>
+        <div class="product light-yellow" onclick="addToCart('Seasonal Drink')">Seasonal Drink</div>
+        <div class="product silver" onclick="addToCart('Seasonal Drink')">Seasonal Drink</div>
+        <div class="blank"></div>
+        <div class="product black" onclick=""><i>More Seasonal,<br>Regional & Test</i></div>
+      </div>
+      `;
+
+    const blendedButtons = `
+      <div class="product-row blended">
+        <div class="product brown" onclick="addToCart('Coffee Frappuccino')">Coffee<br>Frappuccino</div>
+        <div class="product brown" onclick="addToCart('Mocha Frappuccino')">Mocha<br>Frappuccino</div>
+        <div class="product brown" onclick="addToCart('Caramel Frappuccino')">Caramel<br>Frappuccino</div>
+        <div class="product brown" onclick="addToCart('Caramel Ribbon Crunch')">Caramel Ribbon<br>Crunch</div>
+        <div class="product brown" onclick="addToCart('Mocha Cookie Crumble')">Mocha Cookie<br>Crumble</div>
+      </div>
+
+      <div class="product-row blended">
+        <div class="product silver" onclick="addToCart('Matcha Creme Frappuccino')">Matcha<br>Creme<br>Frappuccino</div>
+        <div class="product silver" onclick="addToCart('Syrup Creme Frappuccino')">Syrup<br>Creme<br>Frappuccino</div>
+        <div class="product silver" onclick="addToCart('Strawberry Creme Frappuccino')">Strawberry<br>Creme<br>Frappuccino</div>
+        <div class="product silver" onclick="addToCart('Vanilla Bean Creme Frappuccino')">Vanilla Bean<br>Creme<br>Frappuccino</div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row blended">
+        <div class="product light-yellow" onclick="addToCart('Blended Strawberry Lemonade')">Blended Strawberry Lemonade</div>
+        <div class="blank"></div><div class="blank"></div><div class="blank"></div><div class="blank"></div>
+      </div>
+
+      <div class="product-row blended">
+        <div class="blank"></div><div class="blank"></div><div class="blank"></div><div class="blank"></div><div class="blank"></div>
+      </div>
+
+      <div class="product-row seasonal-row">
+        <div class="product light-yellow" onclick="addToCart('Seasonal Frappuccino')">Seasonal<br>Frappuccino</div>
+        <div class="product light-yellow" onclick="addToCart('Seasonal Frappuccino')">Seasonal<br>Frappuccino</div>
+        <div class="product light-yellow" onclick="addToCart('Featured Frappuccino')">Featured Frappuccino</div>
+        <div class="product light-yellow" onclick="addToCart('LTO Frappuccino')">LTO Frappuccino</div>
+        <div class="product light-yellow" onclick="addToCart('Seasonal Frappuccino')">Seasonal<br>Frappuccino</div>
+      </div>
+      `;
+
+    const teaButtons = `
+      <div class="product-row">
+        <div class="product light-yellow" onclick="addToCart('Chai Latte')">Chai Latte</div>
+        <div class="product bright-green" onclick="addToCart('Matcha Latte')">Matcha Latte</div>
+        <div class="product brown" onclick="addToCart('London Fog Latte')">London Fog Latte</div>
+        <div class="product brown" onclick="addToCart('Custom Tea Latte')">Custom Tea Latte</div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product light-yellow" onclick="addToCart('Iced Pumpkin Cream Chai Latte')">Iced Pumpkin<br>Cream<br>Chai Latte</div>
+        <div class="product bright-green" onclick="addToCart('Iced Banana Cream Protein Matcha')">Iced Banana<br>Cream<br>Protein<br>Matcha</div>
+        <div class="product bright-green" onclick="addToCart('Protein Matcha')">Protein Matcha</div>
+        <div class="product bright-green" onclick="addToCart('Sugar-Free Vanilla Protein Matcha')">Sugar-Free<br>Vanilla<br>Protein Matcha</div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product light-blue" onclick="addToCart('Black Iced Tea')">Black Iced Tea</div>
+        <div class="product light-blue" onclick="addToCart('Green Iced Tea')">Green<br>Iced Tea</div>
+        <div class="product light-blue" onclick="addToCart('Passion Iced Tea')">Passion Tango Iced Tea</div>
+        <div class="product light-blue" onclick="addToCart('Peach Green Iced Tea')">Peach Green<br>Iced Tea</div>
+        <div class="product light-blue" onclick="addToCart('Custom Iced Tea')">Custom<br>Iced Tea</div>
+      </div>
+
+      <div class="product-row">
+        <div class="product yellow" onclick="addToCart('Black Tea Lemonade')">Black<br>Tea<br>Lemonade</div>
+        <div class="product yellow" onclick="addToCart('Green Tea Lemonade')">Green<br>Tea<br>Lemonade</div>
+        <div class="product yellow" onclick="addToCart('Passion Tea Lemonade')">Passion Tango&nbsp;Tea Lemonade</div>
+        <div class="product yellow" onclick="addToCart('Peach Green Tea Lemonade')">Peach Green Tea Lemonade</div>
+        <div class="product yellow" onclick="addToCart('Custom Tea Lemonade')">Custom Tea Lemonade</div>
+      </div>
+
+      <div class="product-row">
+        <div class="product silver" onclick="addToCart('Royal English Breakfast Tea')">Royal English Breakfast Tea</div>
+        <div class="product silver" onclick="addToCart('Green Tea Lemonade')">Green<br>Tea<br>Lemonade</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="product-row">
+        <div class="product light-blue" onclick="addToCart('Emperor's Cloud Tea')">Emporor's<br>Cloud<br>Tea</div>
+        <div class="product purple" onclick="addToCart('Mint Majesty Tea')">Mint Majesty<br>Tea</div>
+        <div class="product light-yellow" onclick="addToCart('Honey Citrus Mint Tea')">Honey Citrus<br>Mint Tea</div>
+        <div class="product purple" onclick="addToCart('Chamomile Mint Blossom Tea')">Chamomile<br>Mint Blossom<br>Tea</div>
+        <div class="blank"></div>
+      </div>
+
+      <br><br>
+
+      <div class="product-row">
+        <div class="product light-blue" onclick="addToCart('Iced Tea Refill')">Iced Tea<br>Refill</div>
+        <div class="product silver" onclick="addToCart('Hot Tea Refill')">Hot Tea<br>Refill</div>
+        <div class="product silver" onclick="addToCart('Add Tea Bag')">Add<br>Tea Bag</div>
+        <div class="blank"></div>
+        <div class="product black" onclick=""><i>Regional &<br>Test</i></div>
+      </div>
+    `
+
+    const otherButtons = `
+      <div class="custom-row">
+        <div class="product light-brown" onclick="addToCart('Hot Chocolate')">Hot Chocolate</div>
+        <div class="product light-blue" onclick="addToCart('Cold Milk')">Cold Milk</div>
+        <div class="product grey" onclick="addToCart('Steamed Milk')">Steamed Milk</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product bright-green" onclick="addToCart('Syrup Creme')">Syrup Creme</div>
+        <div class="product bright-green" onclick="addToCart('Vanilla Creme')">Vanilla Creme</div>
+        <div class="product bright-green" onclick="addToCart('Cinnamon Dolce Creme')">Cinnamon Dolce Creme</div>
+        <div class="product yellow" onclick="addToCart('Lemonade')">Lemonade</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="custom-row">
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product purple" onclick="addToCart('Strawberry Acai Refresher')">Strawberry<br>Acai<br>Refreshers</div>
+        <div class="product purple" onclick="addToCart('Mango Dragonfruit Refresher')">Mango<br>Dragonfruit<br>Refreshers</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="product light-blue" onclick="addToCart('Water')">Cup of Water</div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product purple" onclick="addToCart('Strawberry Acai Lemonade')">Strawberry<br>Acai<br>Lemonade</div>
+        <div class="product purple" onclick="addToCart('Mango Dragonfruit Lemonade')">Mango<br>Dragonfruit<br>Lemonade</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="product silver" onclick="addToCart('Cup of Ice')">Cup of Ice</div>
+      </div>
+
+      <div class="custom-row">
+        <div class="product purple" onclick="addToCart('Pink Drink')">Pink<br>Drink</div>
+        <div class="product purple" onclick="addToCart('Dragon Drink')">Dragon<br>Drink</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="product silver" onclick="addToCart('Pup Cup')">Pup Cup</div>
+      </div>
+
+      <div class="custom-row seasonal-row">
+        <div class="product bright-green" onclick="addToCart('Pumpkin Spice Creme')">Pumpkin<br>Spice<br>Creme</div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="blank"></div>
+        <div class="product black" onclick=""><i>Test Items</i></div>
+      <div class="product black" onclick=""><i>More Seasonal & Regional</i></div>
+      </div>
+    `
+
+    const decafShotsButtons = `
+      <div class="product-row">
+        <div class="product light-blue" onclick="addToCart('Iced', 'hotOrIced')">Iced</div>
+        <div class="blank"></div>
+        <div class="product light-yellow" onclick="addToCart('Blonde Espresso', 'modifier')">Blonde</div>
+        <div class="product grey" onclick="addToCart('Decaf', 'modifier')">Decaf</div>
+        <div class="product grey" onclick="addToCart('1/2 Decaf', 'modifier')">1/2 Decaf</div>
+      </div>
+
+      <div class="product-row">
+        <div class="blank"></div><div class="blank"></div><div class="blank"></div>
+        <div class="product grey" onclick="addToCart('2/3 Decaf', 'modifier')">2/3 Decaf</div>
+        <div class="product grey" onclick="addToCart('1/3 Decaf', 'modifier')">1/3 Decaf</div>
+      </div>
+
+      <div class="product-row">
+        <div class="product purple" onclick="addToCart('Single (Solo)', 'modifier')">Single (Solo)</div>
+        <div class="product purple" onclick="addToCart('Double (Doppio)', 'modifier')">Double (Doppio)</div>
+        <div class="product purple" onclick="addToCart('Triple', 'modifier')">Triple</div>
+        <div class="product purple" onclick="addToCart('Quad', 'modifier')">Quad</div>
+        <div class="product purple" onclick="addToCart('More Shots')">More Shots</div>
+      </div>
+
+      <div class="product-row">
+        <div class="product brown" onclick="addToCart('Affogato', 'modifier')">Affogato</div>
+        <div class="blank"></div><div class="blank"></div><div class="blank"></div>
+        <div class="product light-brown" onclick="addToCart('Frappuccino Roast Coffee', 'modifier')">Frappuccino Roast Coffee</div>
+      </div>
+
+      <div class="product-row">
+        <div class="product light-yellow" onclick="addToCart('Kids', 'size')">Kids</div>
+        <div class="blank"></div>
+        <div class="product teal" onclick="addToCart('Updosed', 'modifier')">Updosed</div>
+        <div class="product teal" onclick="addToCart('Long Shot', 'modifier')">Long Shot</div>
+        <div class="product teal" onclick="addToCart('Ristretto', 'modifier')">Ristretto</div>
+      </div>
+
+      <div class="product-row">
+        <div class="product light-yellow" onclick="addToCart('Short', 'size')">Short</div>
+        <div class="product light-yellow" onclick="addToCart('Tl', 'size')">Tall</div>
+        <div class="product light-yellow" onclick="addToCart('Gr', 'size')">Grande</div>
+        <div class="product light-yellow" onclick="addToCart('Venti', 'size')">Venti</div>
+        <div class="product light-yellow" onclick="addToCart('Trenta', 'size')">Trenta</div>
+      </div>
+      `;
+
+  const syrupButtons = `
+    <div class="product-row">
+      <div class="product black" onclick="addToCart('No', 'prefix')">No</div>
+      <div class="product black" onclick="addToCart('Sub', 'prefix')">Sub</div>
+      <div class="product light-yellow" onclick="addToCart('Pumps', 'prefix')">Pumps</div>
+      <div class="product black" onclick="addToCart('Extra', 'prefix')">Extra</div>
+      <div class="product black" onclick="addToCart('Light', 'prefix')">Light</div>
+    </div>
+
+    <div class="product-row">
+      <div class="product grey" onclick="addToCart('Caramel Syrup','modifier')">Caramel Syrup</div>
+      <div class="product grey" onclick="addToCart('Cinnamon Dolce Syrup','modifier')">Cinnamon Dolce Syrup</div>
+      <div class="product grey" onclick="addToCart('Hazelnut Syrup','modifier')">Hazelnut Syrup</div>
+      <div class="product grey" onclick="addToCart('Vanilla Syrup','modifier')">Vanilla Syrup</div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row">
+      <div class="product grey" onclick="addToCart('Classic Syrup','modifier')">Classic Syrup</div>
+      <div class="product grey" onclick="addToCart('Peppermint Syrup','modifier')">Peppermint Syrup</div>
+      <div class="product grey" onclick="addToCart('Brown Sugar Syrup','modifier')">Brown Sugar Syrup</div>
+      <div class="blank"></div><div class="blank"></div>
+    </div>
+
+    <div class="product-row">
+      <div class="product bright-green" onclick="addToCart('Chai','modifier')">Chai</div>
+      <div class="product grey" onclick="addToCart('Honey Blend','modifier')">Honey Blend</div>
+      <div class="blank"></div><div class="blank"></div><div class="blank"></div>
+    </div>
+
+    <div class="product-row">
+      <div class="product silver" onclick="addToCart('Sugar Free Vanilla Syrup','modifier')">Sugar Free Vanilla Syrup</div>
+      <div class="blank"></div><div class="blank"></div><div class="blank"></div><div class="blank"></div>
+    </div>
+
+    <div class="product-row">
+      <div class="product purple" onclick="addToCart('Mocha Sauce','modifier')">Mocha Sauce</div>
+      <div class="product purple" onclick="addToCart('White Chocolate Mocha','modifier')">White Chocolate Mocha</div>
+      <div class="product purple" onclick="addToCart('Caramel Sauce','modifier')">Caramel Sauce</div>
+      <div class="product purple" onclick="addToCart('Dark Caramel Sauce','modifier')">Dark Caramel Sauce</div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row seasonal-row">
+      <div class="product light-yellow" onclick="addToCart('Seasonal Syrup','modifier')">Seasonal Syrup</div>
+      <div class="product light-yellow" onclick="addToCart('Seasonal Sauce','modifier')">Seasonal Sauce</div>
+      <div class="product light-yellow" onclick="addToCart('Seasonal Syrup','modifier')">Seasonal Syrup</div>
+      <div class="blank"></div><div class="blank"></div>
+    </div>
+    `;
+
+  const milkButtons = `
+    <div class="product-row">
+      <div class="blank"></div>
+      <div class="blank"></div>
+      <div class="blank"></div>
+      <div class="product black" onclick="addToCart('Extra')">Extra</div>
+      <div class="product black" onclick="addToCart('Light')">Light</div>
+    </div>
+
+    <div class="product-row">
+      <div class="product light-blue" onclick="addToCart('Nonfat Milk','modifier')">Nonfat Milk</div>
+      <div class="blank"></div>
+      <div class="blank"></div>
+      <div class="product light-blue" onclick="addToCart('Splash of Nonfat Milk','modifier')">Splash of Nonfat&nbsp;Milk</div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row">
+      <div class="product light-blue" onclick="addToCart('2% Milk','modifier')">2% Milk</div>
+      <div class="product light-blue" onclick="addToCart('Whole Milk','modifier')">Whole Milk</div>
+      <div class="blank"></div>
+      <div class="product light-blue" onclick="addToCart('Splash of 2% Milk','modifier')">Splash of<br>2% Milk</div>
+      <div class="product light-blue" onclick="addToCart('Splash of Whole Milk','modifier')">Splash of Whole&nbsp;Milk</div>
+    </div>
+
+    <div class="product-row">
+      <div class="product light-yellow" onclick="addToCart('Soy Milk','modifier')">Soy Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Oatmilk','modifier')">Oatmilk</div>
+      <div class="product light-yellow" onclick="addToCart('Protein Milk','modifier')">Protein Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Splash of Soy Milk','modifier')">Splash of<br>Soy Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Splash of Oatmilk','modifier')">Splash of Oatmilk</div>
+    </div>
+
+    <div class="product-row">
+      <div class="product light-yellow" onclick="addToCart('Coconut Milk','modifier')">Coconut Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Almond Milk','modifier')">Almond Milk</div>
+      <div class="blank"></div>
+      <div class="product light-yellow" onclick="addToCart('Splash of Coconut Milk','modifier')">Splash of Coconut&nbsp;Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Splash of Almond Milk','modifier')">Splash of Almond&nbsp;Milk</div>
+    </div>
+
+    <div class="product-row">
+      <div class="product purple" onclick="addToCart('Half & Half (Breve)','modifier')">Half & Half<br>(Breve)</div>
+      <div class="product purple" onclick="addToCart('Heavy Cream','modifier')">Heavy Cream</div>
+      <div class="blank"></div>
+      <div class="product purple" onclick="addToCart('Splash of Half & Half Cream','modifier')">Splash of<br>Half & Half<br>Cream</div>
+      <div class="product purple" onclick="addToCart('Splash of Heavy Cream','modifier')">Splash of Heavy Cream</div>
+    </div>
+
+    <div class="product-row">
+      <div class="product light-blue" onclick="addToCart('Vanilla Sweet Cream','modifier')">Vanilla<br>Sweet Cream</div>
+      <div class="product brown" onclick="addToCart('ND Vanilla Sweet Cream','modifier')">ND Vanilla Sweet Cream</div>
+      <div class="blank"></div>
+      <div class="product light-blue" onclick="addToCart('Splash of Vanilla Sweet Cream','modifier')">Splash of Vanilla&nbsp;Sweet<br>Cream</div>
+      <div class="product brown" onclick="addToCart('Splash of ND Vanilla Sweet Cream','modifier')">Splash of<br>ND Vanilla Sweet<br>Cream</div>
+    </div>
+
+    <div class="product-row">
+      <div class="product light-blue" onclick="addToCart('Add Dairy','modifier')">Add Dairy</div>
+      <div class="blank"></div><div class="blank"></div>
+      <div class="product black" onclick="addToCart('Regional & Test')">Regional & Test</div>
+      <div class="blank"></div>
+    </div>
+    `;
+
+  const customButtons = `
+    <div class="product-row custom-row">
+      <div class="product black" onclick="addToCart('No', 'prefix')">No</div>
+      <div class="product black" onclick="addToCart('Sub', 'prefix')">Sub</div>
+      <div class="blank"></div>
+      <div class="product black" onclick="addToCart('Extra', 'prefix')">Extra</div>
+      <div class="product black" onclick="addToCart('Light', 'prefix')">Light</div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row custom-row">
+      <div class="product light-blue" onclick="addToCart('Ice','modifier')">Ice</div>
+      <div class="product light-blue" onclick="addToCart('Water','modifier')">Water</div>
+      <div class="product light-blue" onclick="addToCart('Whipped Cream','modifier')">Whipped Cream</div>
+      <div class="blank"></div>
+      <div class="blank"></div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row custom-row">
+      <div class="product brown" onclick="addToCart('Agave','modifier')">Agave</div>
+      <div class="product brown" onclick="addToCart('Splenda','modifier')">Splenda</div>
+      <div class="product brown" onclick="addToCart('Sugar','modifier')">Sugar</div>
+      <div class="product brown" onclick="addToCart('Stevia','modifier')">Stevia</div>
+      <div class="product brown" onclick="addToCart('Honey','modifier')">Honey</div>
+      <div class="product brown" onclick="addToCart('Raw Sugar','modifier')">Raw Sugar</div>
+    </div>
+
+    <div class="product-row custom-row">
+      <div class="product purple" onclick="addToCart('Strawberry Puree','modifier')">Strawberry Puree</div>
+      <div class="product purple" onclick="addToCart('Frappuccino Chips','modifier')">Frappuccino Chips</div>
+      <div class="product purple" onclick="addToCart('Vanilla Bean Powder','modifier')">Vanilla Bean<br>Powder</div>
+      <div class="product purple" onclick="addToCart('Matcha Powder','modifier')">Matcha</div>
+      <div class="product purple" onclick="addToCart('Blueberries','modifier')">Add Blueberries</div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row custom-row">
+      <div class="product light-yellow" onclick="addToCart('Add Lemonade','modifier')">Lemonade</div>
+      <div class="product light-blue" onclick="addToCart('Mocha Drizzle','modifier')">Mocha Drizzle</div>
+      <div class="product light-blue" onclick="addToCart('Line the Cup w/Mocha','modifier')">Line the Cup<br>w/Mocha</div>
+      <div class="product light-blue" onclick="addToCart('Caramel Drizzle','modifier')">Caramel<br>Drizzle</div>
+      <div class="product light-blue" onclick="addToCart('Line the Cup w/Caramel','modifier')">Line the Cup<br>w/Caramel</div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row custom-row">
+      <div class="product silver" onclick="addToCart('Foam','modifier')">Foam</div>
+      <div class="product black coldFoamsButton">Cold Foams</div>
+      <div class="product teal" onclick="addToCart('Strawberry Inclusions','modifier')">Strawberry Inclusions</div>
+      <div class="product teal" onclick="addToCart('Mango Dragonfruit Inclusions','modifier')">Mango Dragonfruit Inclusions</div>
+      <div class="product teal" onclick="addToCart('Raspberry Flavored Pearls','modifier')">Raspberry<br>Flavored Pearls</div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row custom-row">
+      <div class="blank"></div>
+      <div class="blank"></div>
+      <div class="blank"></div>
+      <div class="blank"></div>
+      <div class="product black" onclick="addToCart('Regional & Test Modifiers')"><i>Regional & Test Modifiers</i></div>
+      <div class="blank"></div>
+    </div>
+
+    <div class="product-row custom-row">
+      <div class="product silver" onclick="addToCart('With Room','modifier')">With Room</div>
+      <div class="product light-yellow" onclick="addToCart('Extra Hot','modifier')">Extra Hot</div>
+      <div class="product light-yellow" onclick="addToCart('Personal Cup','modifier')">Personal Cup</div>
+      <div class="product light-yellow" onclick="addToCart('For Here Cup','modifier')">For Here Cup</div>
+      <div class="product black" onclick="addToCart('More Custom<br>Toppings &<br>Inclusions')">More Custom<br>Toppings &<br>Inclusions</div>
+      <div class="product black" onclick="addToCart('More Custom Directions')"><i>More Custom Directions</i></div>
+    </div>
+    `;
+
+class Drink {
+  constructor(base) {
+    this.base = base;         // e.g. "Latte"
+    this.size = "Gr";         // e.g. "Grande"
+    this.hotOrIced = "";   // default
+    this.modifiers = [];      // e.g. ["Blonde", "Oatmilk"]
+  }
+
+  addModifier(type, value) {
+    if (type === "size") this.size = value;
+    else if (type === "hotOrIced") this.hotOrIced = value;
+    else this.modifiers.push(value);
+  }
+
+  getLabel() {
+    let label = `${this.hotOrIced} ${this.base}`;
+    if (this.size) label = `${this.size} ${label}`;
+    if (this.modifiers.length) label += " (" + this.modifiers.join(", ") + ")";
+    return label;
+  }
+}
+
+let cart = [];
+let currentDrink = null;
+const cartItemsDiv = document.getElementById("cartItems");
+const totalsDiv = document.getElementById("totals");
+const mainGrid = document.getElementById("main-grid");
+
+let currentPrefix = null;
+
+let selectedCartItem = { drinkIndex: null, modifierIndex: null }; 
+
+let currentTopTab = "drink";
+let currentBottomTab = "brewed";
+
+// --- TAB MANAGEMENT ---
+function selectTopTab(btn) {
+  document.querySelectorAll(".top-tabs button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentTopTab = btn.id;
+  if (btn.id === "drink") selectBottomTab(document.querySelector(".bottom-tabs button"), "brewed");
+  else mainGrid.innerHTML = "<h3 style='text-align:center;margin-top:20px;'>Other tabs not yet configured.</h3>";
+}
+
+function selectBottomTab(btn, category) {
+  document.querySelectorAll(".bottom-tabs button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  currentBottomTab = category;
+  switch (category) {
+    case "brewed": mainGrid.innerHTML = brewedButtons; break;
+    case "espresso": mainGrid.innerHTML = espressoButtons; break;
+    case "blended": mainGrid.innerHTML = blendedButtons; break;
+    case "tea": mainGrid.innerHTML = teaButtons; break;
+    case "other": mainGrid.innerHTML = otherButtons; break;
+  }
+}
+
+function selectRightTab(btn, category) {
+  document.querySelectorAll(".modifiers button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  mainGrid.innerHTML = getModifierButtons(category);
+}
+
+// --- MODIFIER BUTTON TEMPLATES ---
+function getModifierButtons(category) {
+  switch (category) {
+    case "decafShots":
+      return decafShotsButtons;
+    case "syrup":
+      return syrupButtons;
+    case "milk":
+      return milkButtons;
+    case "custom":
+      return customButtons;
+    default:
+      return "<div style='text-align:center;margin-top:20px;'>Modifiers for this section coming soon.</div>";
+  }
+}
+
+
+function addToCart(item, type = "base") {
+  // --- BASE DRINKS ---
+  if (type === "base") {
+    if (!currentDrink) {
+      currentDrink = new Drink(item);
+    } else if (currentDrink.base === "[Default Drink]") {
+      currentDrink.base = item;
+    } else {
+      finalizeCurrentDrink();
+      currentDrink = new Drink(item);
+    }
+  }
+
+  // --- PREFIX ---
+  else if (type === "prefix") {
+    currentPrefix = item; // store prefix for next modifier
+    return; // do not add to cart yet
+  }
+
+  // --- SIZES / TEMPERATURE / MODIFIERS ---
+  else if (type === "size" || type === "hotOrIced" || type === "modifier") {
+    if (!currentDrink) currentDrink = new Drink("[Default Drink]");
+
+    const modifierName = currentPrefix ? `${currentPrefix} ${item}` : item;
+    currentDrink.addModifier(type, modifierName);
+
+    currentPrefix = null; // reset prefix after use
+  }
+
+  renderCart();
+}
+
+
+
+// finalize current drink and push to cart
+function finalizeCurrentDrink() {
+  if (currentDrink) {
+    cart.push(currentDrink);
+    currentDrink = null;
+    renderCart();
+  }
+}
+
+// --- CART DISPLAY ---
+function renderCart() {
+  cartItemsDiv.innerHTML = "";
+
+  cart.forEach((drink, index) => {
+    const div = document.createElement("div");
+    div.className = "cart-item";
+    div.innerHTML = `
+      <span>${drink.size ? drink.size + " " : ""}${drink.hotOrIced ? drink.hotOrIced + " " : ""}${drink.base}</span>
+      <button onclick="removeFromCart(${index})">X</button>
+    `;
+    cartItemsDiv.appendChild(div);
+
+    // Render modifiers indented beneath this drink
+    if (drink.modifiers.length) {
+      const mods = document.createElement("div");
+      mods.className = "cart-modifiers";
+      mods.innerHTML = drink.modifiers.map(m => `&nbsp;&nbsp;&nbsp; ${m}`).join("<br>");
+      cartItemsDiv.appendChild(mods);
+    }
+  });
+
+  // Show in-progress drink
+  if (currentDrink) {
+    const preview = document.createElement("div");
+    preview.className = "cart-item preview";
+    preview.style.background = "#9cd6ac";
+    preview.innerHTML = `
+      <span>${currentDrink.size ? currentDrink.size + " " : ""}${currentDrink.hotOrIced ? currentDrink.hotOrIced + " " : ""}${currentDrink.base}</span>
+      <button onclick="finalizeCurrentDrink()">✔</button>
+    `;
+    cartItemsDiv.appendChild(preview);
+
+    if (currentDrink.modifiers.length) {
+      const previewMods = document.createElement("div");
+      previewMods.className = "cart-modifiers preview";
+      previewMods.innerHTML = currentDrink.modifiers.map(m => `&nbsp;&nbsp;&nbsp; ${m}`).join("<br>");
+      cartItemsDiv.appendChild(previewMods);
+    }
+  }
+
+  totalsDiv.textContent = `Total: $${(cart.length * 5).toFixed(2)}`; // temporary $5 per item
+}
+
+  function removeFromCart(index) {
+    cart.splice(index, 1);
+    renderCart();
+  }
+
+  // --- INITIALIZE (run after DOM loads) ---
+  window.onload = () => {
+    selectTopTab(document.getElementById("drink"));
+    selectBottomTab(document.querySelector(".bottom-tabs button"), "brewed");
+    renderCart();
+  };
+</script>
+
+</body>
+</html>
