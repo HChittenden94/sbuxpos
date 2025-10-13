@@ -583,7 +583,7 @@
 
       <div class="product-row">
         <div class="product silver" onclick="addToCart('Royal English Breakfast Tea')">Royal English Breakfast Tea</div>
-        <div class="product silver" onclick="addToCart('Green Tea Lemonade')">Green<br>Tea<br>Lemonade</div>
+        <div class="product silver" onclick="addToCart('Earl Grey Tea')">Earl Grey<br>Tea</div>
         <div class="blank"></div>
         <div class="blank"></div>
         <div class="blank"></div>
@@ -602,7 +602,7 @@
       <div class="product-row">
         <div class="product light-blue" onclick="addToCart('Iced Tea Refill')">Iced Tea<br>Refill</div>
         <div class="product silver" onclick="addToCart('Hot Tea Refill')">Hot Tea<br>Refill</div>
-        <div class="product silver" onclick="addToCart('Add Tea Bag')">Add<br>Tea Bag</div>
+        <div class="product silver" onclick="addToCart('Add Tea Bag', 'modifier')">Add<br>Tea Bag</div>
         <div class="blank"></div>
         <div class="product black" onclick=""><i>Regional &<br>Test</i></div>
       </div>
@@ -950,7 +950,7 @@ function selectTopTab(btn) {
   btn.classList.add("active");
   currentTopTab = btn.id;
   if (btn.id === "drink") selectBottomTab(document.querySelector(".bottom-tabs button"), "brewed");
-  else mainGrid.innerHTML = "<h3 style='text-align:center;margin-top:20px;'>Other tabs not yet configured.</h3>";
+  else mainGrid.innerHTML = "<h3 style='text-align:center;margin-top:20px;'>Coming Soon!</h3>";
 }
 
 function selectBottomTab(btn, category) {
@@ -1042,7 +1042,6 @@ function addToCart(item, type = "base") {
     if (!currentDrink.modifiers) currentDrink.modifiers = [];
     if (!currentDrink.modifierQuantities) currentDrink.modifierQuantities = [];
 
-    // Check if modifier already exists → increment quantity
     const modIndex = currentDrink.modifiers.findIndex(mod => mod === modifierName);
     if (modIndex !== -1) {
       currentDrink.modifierQuantities[modIndex]++;
