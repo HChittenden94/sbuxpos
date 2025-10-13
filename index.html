@@ -37,18 +37,18 @@
       padding-bottom: 8px; 
     }
     .cart-items { 
-      flex: 1; 
-      overflow-y: auto; 
+      flex: 1;
+      overflow-y: auto;
+      border-bottom: 1px solid black;
     }
+
     .cart-item {
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
       margin-bottom: 8px; 
-      background: #fff; 
-      padding: 8px; 
-      border-radius: 6px; 
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+      padding: 8px;      
+    }
 
     .cart-item button { 
       background: #e74c3c; 
@@ -62,7 +62,79 @@
       border-top: 2px solid #ccc; 
       padding-top: 12px;
       font-size: 18px;
-      font-weight: bold; 
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    /* Shared style for bottom action buttons */
+    .void-btn,
+    .next-btn,
+    .quantity-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.2em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      margin-top: auto;
+      margin-bottom: 4px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    /* Unique colors */
+    .quantity-btn {
+      background: #000;
+    }
+
+    .void-btn {
+      background: #e74c3c;
+    }
+
+    .void-btn:hover {
+      background: #c0392b;
+    }
+
+    .next-btn {
+      background: #000;
+      height: 50px;
+    }
+
+    .next-btn:hover, .quantity-btn:hover {
+      background: #454545;
+    }
+
+    .void-btn:active,
+    .next-btn:active,
+    .quantity-btn:active {
+      transform: scale(0.98);
+    }
+
+    .cart,
+    .modifiers {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .cart {
+      padding-bottom: 10px;
+    }
+
+    .modifiers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+      justify-content: flex-start;
+      padding-bottom: 10px;
+      gap: 8px;
+    }
+
+    .cart-item.selected,
+    .cart-modifiers span.selected {
+      background-color: #89c499;
     }
 
     .main { 
@@ -81,7 +153,7 @@
 
     .top-tabs button, .bottom-tabs button, .modifiers button {
       flex: 1;
-      font-size: 1.2rem;  /* bigger tap targets */
+      font-size: 1.2rem;
       padding: 12px 0;
       margin: 0 5px;
       border-radius: 10px;
@@ -153,7 +225,11 @@
       margin: 5% 10% 5% 10%;
     }
     
-    .blank { background: transparent; pointer-events: none; border: none; }
+    .blank { 
+      background: transparent;
+      pointer-events: none;
+      border: none;
+    }
 
     .light-blue { background: rgba(120,173,204,0.8); }
     .light-yellow { background: rgba(255,229,140,0.8); }
@@ -172,17 +248,81 @@
     .cart-modifiers {
       font-size: 0.9em;
       color: #555;
-      margin-left: 15px;
-      margin-top: 3px;
+      margin-top: -9px;
       margin-bottom: 8px;
-      line-height: 1.2;
-      white-space: nowrap;
+      padding-top: 2px;
+      padding-bottom: 10px;
+      line-height: 1.5;
+      position: relative;
     }
+
+    /* Indent only the text inside the modifier */
+    .cart-modifiers .modifier-text {
+      display: block;
+      padding-left: 15px;
+    }
+
+    .cart-modifiers span.selected  {
+      background-color: #6fa17c !important;
+    }
+
     .cart-item.preview + .cart-modifiers.preview {
-      background: #89c499;
+      background: #a9d6b5;
       padding-top: 4px;
       padding-bottom: 4px;
       white-space: nowrap;
+    }
+
+    .cart-item.current,
+    .cart-modifiers.current {
+      background-color: #a9d6b5 !important;
+    }
+
+    .cart-item.selected {
+      background-color: #6fa17c !important;
+    }
+
+    .quantity-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .quantity-content {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .quantity-display {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .quantity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .quantity-grid .num-btn {
+      font-size: 1.5em;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    #clear-btn {
+      text-align: center;
+      margin: 0 auto;
     }
 
   </style>
@@ -193,7 +333,31 @@
       <h2>Order</h2>
       <div class="cart-items" id="cartItems"></div>
       <div class="totals" id="totals">Total: $0.00</div>
+      <button id="quantity-btn" class="quantity-btn">Quantity</button>
+      <button id="voidButton" class="void-btn" onclick="voidSelection()">VOID</button>
     </div>
+
+    <div id="quantity-modal" class="quantity-modal" style="display:none;">
+      <div class="quantity-content">
+        <div class="quantity-display" id="quantity-display">0</div>
+        <div class="quantity-grid">
+          <button class="num-btn">1</button>
+          <button class="num-btn">2</button>
+          <button class="num-btn">3</button>
+          <button class="num-btn">4</button>
+          <button class="num-btn">5</button>
+          <button class="num-btn">6</button>
+          <button class="num-btn">7</button>
+          <button class="num-btn">8</button>
+          <button class="num-btn">9</button>
+          <button class="num-btn">0</button>
+          <button class="num-btn">00</button>
+          <button id="quantity-enter" class="num-btn">OK</button>
+          <button id="clear-btn" onClick="clearQty()">Clear</button>
+        </div>
+      </div>
+    </div>
+
 
     <div class="main">
       <div class="top-tabs">
@@ -220,6 +384,7 @@
       <button onclick="selectRightTab(this, 'syrup')">Syrup</button>
       <button onclick="selectRightTab(this, 'milk')">Milk</button>
       <button onclick="selectRightTab(this, 'custom')">Custom</button>
+      <button id="nextDrinkButton" class="next-btn" onclick="nextDrink()">Next Drink</button>
     </div>
   </div>
 
@@ -777,6 +942,7 @@ const totalsDiv = document.getElementById("totals");
 const mainGrid = document.getElementById("main-grid");
 
 let currentPrefix = null;
+let pendingQuantity = null; 
 
 let selectedCartItem = { drinkIndex: null, modifierIndex: null }; 
 
@@ -827,98 +993,217 @@ function getModifierButtons(category) {
   }
 }
 
-
 function addToCart(item, type = "base") {
   // --- BASE DRINKS ---
   if (type === "base") {
+    // Case 1: No current drink yet
     if (!currentDrink) {
       currentDrink = new Drink(item);
-    } else if (currentDrink.base === "[Default Drink]") {
-      currentDrink.base = item;
-    } else {
-      finalizeCurrentDrink();
-      currentDrink = new Drink(item);
+      cart.push(currentDrink);
     }
+    // Case 2: You’ve only selected size/iced but no base yet
+    else if (currentDrink.base === "[Default Drink]") {
+      currentDrink.base = item;
+    }
+    // Case 3: Already have a base drink, start a new one
+    else {
+      currentDrink = new Drink(item);
+      cart.push(currentDrink);
+    }
+
+    // Mark the current drink as selected
+    selectedCartItem = { drinkIndex: cart.length - 1, modifierIndex: null };
   }
 
   // --- PREFIX ---
   else if (type === "prefix") {
-    currentPrefix = item; // store prefix for next modifier
-    return; // do not add to cart yet
+    currentPrefix = item;
+    return; // wait for next modifier
   }
 
-  // --- SIZES / TEMPERATURE / MODIFIERS ---
+  // --- SIZE / ICED / MODIFIERS ---
   else if (type === "size" || type === "hotOrIced" || type === "modifier") {
-    if (!currentDrink) currentDrink = new Drink("[Default Drink]");
+    // If nothing selected yet, create a temporary default drink
+    if (!currentDrink) {
+      currentDrink = new Drink("[Default Drink]");
+      cart.push(currentDrink);
+      selectedCartItem = { drinkIndex: cart.length - 1, modifierIndex: null };
+    }
 
     const modifierName = currentPrefix ? `${currentPrefix} ${item}` : item;
     currentDrink.addModifier(type, modifierName);
-
-    currentPrefix = null; // reset prefix after use
+    currentPrefix = null;
   }
 
   renderCart();
-}
-
-
-
-// finalize current drink and push to cart
-function finalizeCurrentDrink() {
-  if (currentDrink) {
-    cart.push(currentDrink);
-    currentDrink = null;
-    renderCart();
-  }
 }
 
 // --- CART DISPLAY ---
 function renderCart() {
   cartItemsDiv.innerHTML = "";
 
-  cart.forEach((drink, index) => {
-    const div = document.createElement("div");
-    div.className = "cart-item";
-    div.innerHTML = `
+  cart.forEach((drink, drinkIndex) => {
+    // --- Drink line ---
+    const drinkDiv = document.createElement("div");
+    drinkDiv.className = "cart-item";
+    drinkDiv.innerHTML = `
       <span>${drink.size ? drink.size + " " : ""}${drink.hotOrIced ? drink.hotOrIced + " " : ""}${drink.base}</span>
-      <button onclick="removeFromCart(${index})">X</button>
     `;
-    cartItemsDiv.appendChild(div);
 
-    // Render modifiers indented beneath this drink
+    // Highlight green if this drink is the current one being edited
+    if (drink === currentDrink) {
+      drinkDiv.classList.add("current");
+    }
+
+    // Click to select drink
+    drinkDiv.addEventListener("click", () => {
+      currentDrink = drink;
+      selectCartItem(drinkIndex, null);
+    });
+
+    // Highlight pink if specifically selected for void
+    if (
+      selectedCartItem.drinkIndex === drinkIndex &&
+      selectedCartItem.modifierIndex === null
+    ) {
+      drinkDiv.classList.add("selected");
+    }
+
+    cartItemsDiv.appendChild(drinkDiv);
+
+    // --- Modifiers ---
     if (drink.modifiers.length) {
-      const mods = document.createElement("div");
-      mods.className = "cart-modifiers";
-      mods.innerHTML = drink.modifiers.map(m => `&nbsp;&nbsp;&nbsp; ${m}`).join("<br>");
-      cartItemsDiv.appendChild(mods);
+      const modsDiv = document.createElement("div");
+      modsDiv.className = "cart-modifiers";
+
+      // Add the same green highlight if drink is current
+      if (drink === currentDrink) {
+        modsDiv.classList.add("current");
+      }
+
+      drink.modifiers.forEach((m, modIndex) => {
+        const modSpan = document.createElement("span");
+        modSpan.className = "modifier-text";
+        modSpan.style.display = "block";
+        modSpan.innerHTML = "";
+
+        if (drink.modifierQuantities && drink.modifierQuantities[modIndex] > 1) {
+          modSpan.innerHTML += `${drink.modifierQuantities[modIndex]} `;
+        }
+
+        modSpan.innerHTML += m;
+
+        modSpan.addEventListener("click", (e) => {
+          e.stopPropagation();
+          currentDrink = drink;
+          selectCartItem(drinkIndex, modIndex);
+        });
+
+        // Highlight pink if this modifier is selected for void
+        if (
+          selectedCartItem.drinkIndex === drinkIndex &&
+          selectedCartItem.modifierIndex === modIndex
+        ) {
+          modSpan.classList.add("selected");
+        }
+
+        modsDiv.appendChild(modSpan);
+      });
+
+      cartItemsDiv.appendChild(modsDiv);
     }
   });
 
-  // Show in-progress drink
-  if (currentDrink) {
-    const preview = document.createElement("div");
-    preview.className = "cart-item preview";
-    preview.style.background = "#9cd6ac";
-    preview.innerHTML = `
-      <span>${currentDrink.size ? currentDrink.size + " " : ""}${currentDrink.hotOrIced ? currentDrink.hotOrIced + " " : ""}${currentDrink.base}</span>
-      <button onclick="finalizeCurrentDrink()">✔</button>
-    `;
-    cartItemsDiv.appendChild(preview);
-
-    if (currentDrink.modifiers.length) {
-      const previewMods = document.createElement("div");
-      previewMods.className = "cart-modifiers preview";
-      previewMods.innerHTML = currentDrink.modifiers.map(m => `&nbsp;&nbsp;&nbsp; ${m}`).join("<br>");
-      cartItemsDiv.appendChild(previewMods);
-    }
-  }
-
-  totalsDiv.textContent = `Total: $${(cart.length * 5).toFixed(2)}`; // temporary $5 per item
+  totalsDiv.textContent = `Total: $${(cart.length * 0).toFixed(2)}`;
 }
 
-  function removeFromCart(index) {
-    cart.splice(index, 1);
-    renderCart();
+function selectCartItem(drinkIndex, modifierIndex = null) {
+  selectedCartItem = { drinkIndex, modifierIndex };
+  renderCart();
+}
+
+function voidSelection() {
+  const { drinkIndex, modifierIndex } = selectedCartItem;
+
+  if (drinkIndex === null) return; // nothing selected
+
+  if (modifierIndex === null) {
+    // Remove entire drink
+    cart.splice(drinkIndex, 1);
+  } else {
+    // Remove a specific modifier
+    cart[drinkIndex].modifiers.splice(modifierIndex, 1);
   }
+
+  selectedCartItem = { drinkIndex: null, modifierIndex: null };
+  renderCart();
+}
+
+function nextDrink() {
+  // Finalize the current drink if one is being built
+  if (currentDrink && !cart.includes(currentDrink)) {
+    cart.push(currentDrink);
+  }
+
+  // Reset for a fresh start
+  currentDrink = null;
+  currentPrefix = null;
+  selectedCartItem = { drinkIndex: null, modifierIndex: null };
+
+  // Remove any visual selections
+  document.querySelectorAll(".cart-item.selected, .cart-modifiers span.selected").forEach(el => {
+    el.classList.remove("selected");
+  });
+
+  renderCart();
+}
+
+const quantityBtn = document.getElementById("quantity-btn");
+const quantityModal = document.getElementById("quantity-modal");
+const quantityDisplay = document.getElementById("quantity-display");
+let tempQuantity = "";
+
+quantityBtn.addEventListener("click", () => {
+  tempQuantity = "";
+  quantityDisplay.textContent = "";
+  quantityModal.style.display = "flex";
+});
+
+
+// Number buttons
+document.querySelectorAll(".num-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.id === "quantity-enter") {
+      submitQuantity();
+    } else {
+      if (tempQuantity.length < 3) {  // max 3 digits
+        tempQuantity += btn.textContent;
+        quantityDisplay.textContent = tempQuantity;
+      }
+    }
+  });
+});
+
+function submitQuantity() {
+  const qty = parseInt(tempQuantity || "1", 10); // default to 1
+  const { drinkIndex, modifierIndex } = selectedCartItem;
+
+  if (drinkIndex !== null && modifierIndex !== null) {
+    const drink = cart[drinkIndex];
+    if (!drink.modifierQuantities) drink.modifierQuantities = [];
+    drink.modifierQuantities[modifierIndex] = qty;
+    renderCart();
+  } else {
+    pendingQuantity = qty; // store as pending if modifier not yet selected
+  }
+
+  quantityModal.style.display = "none";
+}
+
+function clearQty() {
+  tempQuantity = "";
+  quantityDisplay.textContent = "";
+}
 
   // --- INITIALIZE (run after DOM loads) ---
   window.onload = () => {
