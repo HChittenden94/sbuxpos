@@ -784,7 +784,7 @@
     </div>
 
     <div class="product-row">
-      <div class="product light-blue" onclick="addToCart('Nonfat Milk','modifier')">Nonfat Milk</div>
+      <div class="product light-blue" onclick="addToCart('Nonfat Milk','milk')">Nonfat Milk</div>
       <div class="blank"></div>
       <div class="blank"></div>
       <div class="product light-blue" onclick="addToCart('Splash of Nonfat Milk','modifier')">Splash of Nonfat&nbsp;Milk</div>
@@ -792,32 +792,32 @@
     </div>
 
     <div class="product-row">
-      <div class="product light-blue" onclick="addToCart('2% Milk','modifier')">2% Milk</div>
-      <div class="product light-blue" onclick="addToCart('Whole Milk','modifier')">Whole Milk</div>
+      <div class="product light-blue" onclick="addToCart('2% Milk','milk')">2% Milk</div>
+      <div class="product light-blue" onclick="addToCart('Whole Milk','milk')">Whole Milk</div>
       <div class="blank"></div>
       <div class="product light-blue" onclick="addToCart('Splash of 2% Milk','modifier')">Splash of<br>2% Milk</div>
       <div class="product light-blue" onclick="addToCart('Splash of Whole Milk','modifier')">Splash of Whole&nbsp;Milk</div>
     </div>
 
     <div class="product-row">
-      <div class="product light-yellow" onclick="addToCart('Soy Milk','modifier')">Soy Milk</div>
-      <div class="product light-yellow" onclick="addToCart('Oatmilk','modifier')">Oatmilk</div>
-      <div class="product light-yellow" onclick="addToCart('Protein Milk','modifier')">Protein Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Soy Milk','milk')">Soy Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Oatmilk','milk')">Oatmilk</div>
+      <div class="product light-yellow" onclick="addToCart('Protein Milk','milk')">Protein Milk</div>
       <div class="product light-yellow" onclick="addToCart('Splash of Soy Milk','modifier')">Splash of<br>Soy Milk</div>
       <div class="product light-yellow" onclick="addToCart('Splash of Oatmilk','modifier')">Splash of Oatmilk</div>
     </div>
 
     <div class="product-row">
-      <div class="product light-yellow" onclick="addToCart('Coconut Milk','modifier')">Coconut Milk</div>
-      <div class="product light-yellow" onclick="addToCart('Almond Milk','modifier')">Almond Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Coconut Milk','milk')">Coconut Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Almond Milk','milk')">Almond Milk</div>
       <div class="blank"></div>
       <div class="product light-yellow" onclick="addToCart('Splash of Coconut Milk','modifier')">Splash of Coconut&nbsp;Milk</div>
       <div class="product light-yellow" onclick="addToCart('Splash of Almond Milk','modifier')">Splash of Almond&nbsp;Milk</div>
     </div>
 
     <div class="product-row">
-      <div class="product purple" onclick="addToCart('Half & Half (Breve)','modifier')">Half & Half<br>(Breve)</div>
-      <div class="product purple" onclick="addToCart('Heavy Cream','modifier')">Heavy Cream</div>
+      <div class="product purple" onclick="addToCart('Half & Half (Breve)','milk')">Half & Half<br>(Breve)</div>
+      <div class="product purple" onclick="addToCart('Heavy Cream','milk')">Heavy Cream</div>
       <div class="blank"></div>
       <div class="product purple" onclick="addToCart('Splash of Half & Half Cream','modifier')">Splash of<br>Half & Half<br>Cream</div>
       <div class="product purple" onclick="addToCart('Splash of Heavy Cream','modifier')">Splash of Heavy Cream</div>
@@ -994,24 +994,21 @@ function getModifierButtons(category) {
 }
 
 function addToCart(item, type = "base") {
-  // --- BASE DRINKS ---
-  if (type === "base") {
-    // Case 1: No current drink yet
-    if (!currentDrink) {
-      currentDrink = new Drink(item);
-      cart.push(currentDrink);
-    }
-    // Case 2: You’ve only selected size/iced but no base yet
-    else if (currentDrink.base === "[Default Drink]") {
-      currentDrink.base = item;
-    }
-    // Case 3: Already have a base drink, start a new one
-    else {
-      currentDrink = new Drink(item);
-      cart.push(currentDrink);
-    }
+  // Ensure we have a current drink
+  if (!currentDrink) {
+    currentDrink = new Drink("[Default Drink]");
+    cart.push(currentDrink);
+    selectedCartItem = { drinkIndex: cart.length - 1, modifierIndex: null };
+  }
 
-    // Mark the current drink as selected
+  // --- BASE DRINK ---
+  if (type === "base") {
+    if (currentDrink.base === "[Default Drink]") {
+      currentDrink.base = item;
+    } else {
+      currentDrink = new Drink(item);
+      cart.push(currentDrink);
+    }
     selectedCartItem = { drinkIndex: cart.length - 1, modifierIndex: null };
   }
 
@@ -1021,22 +1018,52 @@ function addToCart(item, type = "base") {
     return; // wait for next modifier
   }
 
-  // --- SIZE / ICED / MODIFIERS ---
-  else if (type === "size" || type === "hotOrIced" || type === "modifier") {
-    // If nothing selected yet, create a temporary default drink
-    if (!currentDrink) {
-      currentDrink = new Drink("[Default Drink]");
-      cart.push(currentDrink);
-      selectedCartItem = { drinkIndex: cart.length - 1, modifierIndex: null };
+  // --- SIZE / HOT OR ICED ---
+  else if (type === "size" || type === "hotOrIced") {
+    currentDrink.addModifier(type, item);
+  }
+
+  // --- MILK ---
+  else if (type === "milk") {
+    if (!currentDrink.modifiers) currentDrink.modifiers = [];
+    if (!currentDrink.modifierQuantities) currentDrink.modifierQuantities = [];
+
+    // Find existing milk
+    const milkIndex = currentDrink.modifiers.findIndex(mod => mod.toLowerCase().includes("milk"));
+
+    if (milkIndex !== -1) {
+      // Replace milk and reset quantity to 1
+      currentDrink.modifiers[milkIndex] = item;
+      currentDrink.modifierQuantities[milkIndex] = 1;
+    } else {
+      // Add milk
+      currentDrink.modifiers.push(item);
+      currentDrink.modifierQuantities.push(1);
+    }
+  }
+
+  // --- OTHER MODIFIERS ---
+  else if (type === "modifier") {
+    const modifierName = currentPrefix ? `${currentPrefix} ${item}` : item;
+    if (!currentDrink.modifiers) currentDrink.modifiers = [];
+    if (!currentDrink.modifierQuantities) currentDrink.modifierQuantities = [];
+
+    // Check if modifier already exists → increment quantity
+    const modIndex = currentDrink.modifiers.findIndex(mod => mod === modifierName);
+    if (modIndex !== -1) {
+      currentDrink.modifierQuantities[modIndex]++;
+    } else {
+      currentDrink.modifiers.push(modifierName);
+      currentDrink.modifierQuantities.push(1);
     }
 
-    const modifierName = currentPrefix ? `${currentPrefix} ${item}` : item;
-    currentDrink.addModifier(type, modifierName);
     currentPrefix = null;
   }
 
   renderCart();
 }
+
+
 
 // --- CART DISPLAY ---
 function renderCart() {
@@ -1130,9 +1157,14 @@ function voidSelection() {
   if (modifierIndex === null) {
     // Remove entire drink
     cart.splice(drinkIndex, 1);
+    currentDrink = null; // reset currentDrink so Next starts fresh
   } else {
     // Remove a specific modifier
     cart[drinkIndex].modifiers.splice(modifierIndex, 1);
+    if (cart[drinkIndex].modifierQuantities) {
+      cart[drinkIndex].modifierQuantities.splice(modifierIndex, 1);
+    }
+    // keep currentDrink as-is so user can keep editing
   }
 
   selectedCartItem = { drinkIndex: null, modifierIndex: null };
@@ -1140,12 +1172,15 @@ function voidSelection() {
 }
 
 function nextDrink() {
-  // Finalize the current drink if one is being built
-  if (currentDrink && !cart.includes(currentDrink)) {
-    cart.push(currentDrink);
+  // If currentDrink exists but is empty (default drink with no base), don't push it
+  if (currentDrink && currentDrink.base !== "[Default Drink]") {
+    // Only add currentDrink if it isn’t already in the cart
+    if (!cart.includes(currentDrink)) {
+      cart.push(currentDrink);
+    }
   }
 
-  // Reset for a fresh start
+  // Reset everything for a fresh start
   currentDrink = null;
   currentPrefix = null;
   selectedCartItem = { drinkIndex: null, modifierIndex: null };
