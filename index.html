@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sbux POS Practice</title>
+  <title>Starbs Register Practice</title>
   <style>
     html, body {
       margin: 0;
@@ -66,7 +66,6 @@
       margin-bottom: 4px;
     }
 
-    /* Shared style for bottom action buttons */
     .void-btn,
     .next-btn,
     .quantity-btn {
@@ -83,7 +82,6 @@
       transition: background 0.2s, transform 0.1s;
     }
 
-    /* Unique colors */
     .quantity-btn {
       background: #000;
     }
@@ -256,10 +254,9 @@
       position: relative;
     }
 
-    /* Indent only the text inside the modifier */
     .cart-modifiers .modifier-text {
       display: block;
-      padding-left: 15px;
+      padding-left: 25px;
     }
 
     .cart-modifiers span.selected  {
@@ -389,7 +386,6 @@
   </div>
 
   <script>
-    // Keep consistent size regardless of viewport
     function resize() {
       const wrapper = document.querySelector(".wrapper");
       const scaleX = window.innerWidth / 1440;
@@ -915,10 +911,10 @@
 
 class Drink {
   constructor(base) {
-    this.base = base;         // e.g. "Latte"
-    this.size = "Gr";         // e.g. "Grande"
-    this.hotOrIced = "";   // default
-    this.modifiers = [];      // e.g. ["Blonde", "Oatmilk"]
+    this.base = base;
+    this.size = "Gr";
+    this.hotOrIced = "";
+    this.modifiers = [];
   }
 
   addModifier(type, value) {
@@ -949,7 +945,6 @@ let selectedCartItem = { drinkIndex: null, modifierIndex: null };
 let currentTopTab = "drink";
 let currentBottomTab = "brewed";
 
-// --- TAB MANAGEMENT ---
 function selectTopTab(btn) {
   document.querySelectorAll(".top-tabs button").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -960,8 +955,12 @@ function selectTopTab(btn) {
 
 function selectBottomTab(btn, category) {
   document.querySelectorAll(".bottom-tabs button").forEach(b => b.classList.remove("active"));
+  
+  document.querySelectorAll(".modifiers button").forEach(b => b.classList.remove("active"));
+
   btn.classList.add("active");
   currentBottomTab = category;
+
   switch (category) {
     case "brewed": mainGrid.innerHTML = brewedButtons; break;
     case "espresso": mainGrid.innerHTML = espressoButtons; break;
@@ -973,11 +972,15 @@ function selectBottomTab(btn, category) {
 
 function selectRightTab(btn, category) {
   document.querySelectorAll(".modifiers button").forEach(b => b.classList.remove("active"));
+
+  document.querySelectorAll(".bottom-tabs button").forEach(b => b.classList.remove("active"));
+
   btn.classList.add("active");
+
   mainGrid.innerHTML = getModifierButtons(category);
 }
 
-// --- MODIFIER BUTTON TEMPLATES ---
+
 function getModifierButtons(category) {
   switch (category) {
     case "decafShots":
@@ -994,14 +997,12 @@ function getModifierButtons(category) {
 }
 
 function addToCart(item, type = "base") {
-  // Ensure we have a current drink
   if (!currentDrink) {
     currentDrink = new Drink("[Default Drink]");
     cart.push(currentDrink);
     selectedCartItem = { drinkIndex: cart.length - 1, modifierIndex: null };
   }
 
-  // --- BASE DRINK ---
   if (type === "base") {
     if (currentDrink.base === "[Default Drink]") {
       currentDrink.base = item;
@@ -1012,37 +1013,30 @@ function addToCart(item, type = "base") {
     selectedCartItem = { drinkIndex: cart.length - 1, modifierIndex: null };
   }
 
-  // --- PREFIX ---
   else if (type === "prefix") {
     currentPrefix = item;
     return; // wait for next modifier
   }
 
-  // --- SIZE / HOT OR ICED ---
   else if (type === "size" || type === "hotOrIced") {
     currentDrink.addModifier(type, item);
   }
 
-  // --- MILK ---
   else if (type === "milk") {
     if (!currentDrink.modifiers) currentDrink.modifiers = [];
     if (!currentDrink.modifierQuantities) currentDrink.modifierQuantities = [];
 
-    // Find existing milk
     const milkIndex = currentDrink.modifiers.findIndex(mod => mod.toLowerCase().includes("milk"));
 
     if (milkIndex !== -1) {
-      // Replace milk and reset quantity to 1
       currentDrink.modifiers[milkIndex] = item;
       currentDrink.modifierQuantities[milkIndex] = 1;
     } else {
-      // Add milk
       currentDrink.modifiers.push(item);
       currentDrink.modifierQuantities.push(1);
     }
   }
 
-  // --- OTHER MODIFIERS ---
   else if (type === "modifier") {
     const modifierName = currentPrefix ? `${currentPrefix} ${item}` : item;
     if (!currentDrink.modifiers) currentDrink.modifiers = [];
@@ -1064,31 +1058,25 @@ function addToCart(item, type = "base") {
 }
 
 
-
-// --- CART DISPLAY ---
 function renderCart() {
   cartItemsDiv.innerHTML = "";
 
   cart.forEach((drink, drinkIndex) => {
-    // --- Drink line ---
     const drinkDiv = document.createElement("div");
     drinkDiv.className = "cart-item";
     drinkDiv.innerHTML = `
       <span>${drink.size ? drink.size + " " : ""}${drink.hotOrIced ? drink.hotOrIced + " " : ""}${drink.base}</span>
     `;
 
-    // Highlight green if this drink is the current one being edited
     if (drink === currentDrink) {
       drinkDiv.classList.add("current");
     }
 
-    // Click to select drink
     drinkDiv.addEventListener("click", () => {
       currentDrink = drink;
       selectCartItem(drinkIndex, null);
     });
 
-    // Highlight pink if specifically selected for void
     if (
       selectedCartItem.drinkIndex === drinkIndex &&
       selectedCartItem.modifierIndex === null
@@ -1098,12 +1086,10 @@ function renderCart() {
 
     cartItemsDiv.appendChild(drinkDiv);
 
-    // --- Modifiers ---
     if (drink.modifiers.length) {
       const modsDiv = document.createElement("div");
       modsDiv.className = "cart-modifiers";
 
-      // Add the same green highlight if drink is current
       if (drink === currentDrink) {
         modsDiv.classList.add("current");
       }
@@ -1126,7 +1112,6 @@ function renderCart() {
           selectCartItem(drinkIndex, modIndex);
         });
 
-        // Highlight pink if this modifier is selected for void
         if (
           selectedCartItem.drinkIndex === drinkIndex &&
           selectedCartItem.modifierIndex === modIndex
@@ -1152,40 +1137,36 @@ function selectCartItem(drinkIndex, modifierIndex = null) {
 function voidSelection() {
   const { drinkIndex, modifierIndex } = selectedCartItem;
 
-  if (drinkIndex === null) return; // nothing selected
+  if (drinkIndex === null) return;
 
   if (modifierIndex === null) {
-    // Remove entire drink
     cart.splice(drinkIndex, 1);
-    currentDrink = null; // reset currentDrink so Next starts fresh
+    currentDrink = null;
   } else {
-    // Remove a specific modifier
     cart[drinkIndex].modifiers.splice(modifierIndex, 1);
     if (cart[drinkIndex].modifierQuantities) {
       cart[drinkIndex].modifierQuantities.splice(modifierIndex, 1);
     }
-    // keep currentDrink as-is so user can keep editing
+    tempQuantity = "";
+    quantityDisplay.textContent = "0";
   }
 
   selectedCartItem = { drinkIndex: null, modifierIndex: null };
   renderCart();
 }
 
+
 function nextDrink() {
-  // If currentDrink exists but is empty (default drink with no base), don't push it
   if (currentDrink && currentDrink.base !== "[Default Drink]") {
-    // Only add currentDrink if it isn’t already in the cart
     if (!cart.includes(currentDrink)) {
       cart.push(currentDrink);
     }
   }
 
-  // Reset everything for a fresh start
   currentDrink = null;
   currentPrefix = null;
   selectedCartItem = { drinkIndex: null, modifierIndex: null };
 
-  // Remove any visual selections
   document.querySelectorAll(".cart-item.selected, .cart-modifiers span.selected").forEach(el => {
     el.classList.remove("selected");
   });
@@ -1205,7 +1186,6 @@ quantityBtn.addEventListener("click", () => {
 });
 
 
-// Number buttons
 document.querySelectorAll(".num-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     if (btn.id === "quantity-enter") {
@@ -1240,7 +1220,7 @@ function clearQty() {
   quantityDisplay.textContent = "";
 }
 
-  // --- INITIALIZE (run after DOM loads) ---
+// Initialize
   window.onload = () => {
     selectTopTab(document.getElementById("drink"));
     selectBottomTab(document.querySelector(".bottom-tabs button"), "brewed");
