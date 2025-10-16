@@ -437,7 +437,7 @@
 
     const brewedButtons = `
       <div class="custom-row">
-        <div class="product black" onclick=""><i>Pour Over,<br>Regional<br>& Test</i></div>
+        <div class="product black" onclick="alert('No lol')"><i>Pour Over,<br>Regional<br>& Test</i></div>
       </div>
       <div class="custom-row">
         <div class="product light-blue" onclick="addToCart('Iced Coffee')">Bunn<br>Iced Coffee</div>
@@ -548,7 +548,7 @@
         <div class="product light-yellow" onclick="addToCart('Seasonal Drink')">Seasonal Drink</div>
         <div class="product silver" onclick="addToCart('Seasonal Drink')">Seasonal Drink</div>
         <div class="blank"></div>
-        <div class="product black" onclick=""><i>More Seasonal,<br>Regional & Test</i></div>
+        <div class="product black" onclick="alert('Nosey!')"><i>More Seasonal,<br>Regional & Test</i></div>
       </div>
       `;
 
@@ -643,7 +643,7 @@
         <div class="product silver" onclick="addToCart('Hot Tea Refill')">Hot Tea<br>Refill</div>
         <div class="product silver" onclick="addToCart('Add Tea Bag', 'modifier')">Add<br>Tea Bag</div>
         <div class="blank"></div>
-        <div class="product black" onclick=""><i>Regional &<br>Test</i></div>
+        <div class="product black" onclick="alert('I am too lazy to put anything in here tbh')"><i>Regional &<br>Test</i></div>
       </div>
     `
 
@@ -707,8 +707,8 @@
         <div class="blank"></div>
         <div class="blank"></div>
         <div class="blank"></div>
-        <div class="product black" onclick=""><i>Test Items</i></div>
-      <div class="product black" onclick=""><i>More Seasonal & Regional</i></div>
+        <div class="product black" onclick="alert('The only thing you are testing is my patience. Jk lol')"><i>Test Items</i></div>
+      <div class="product black" onclick="alert('Whats the password, green bean?')"><i>More Seasonal & Regional</i></div>
       </div>
     `
 
@@ -869,7 +869,7 @@
     <div class="product-row">
       <div class="product light-blue" onclick="addToCart('Add Dairy','modifier')">Add Dairy</div>
       <div class="blank"></div><div class="blank"></div>
-      <div class="product black" onclick=""><i>Regional & Test</i></div>
+      <div class="product black" onclick="alert('Thank your trainer today :)')"><i>Regional & Test</i></div>
       <div class="blank"></div>
     </div>
     `;
@@ -934,7 +934,7 @@
       <div class="blank"></div>
       <div class="blank"></div>
       <div class="blank"></div>
-      <div class="product black" onclick="addToCart('Regional & Test Modifiers')"><i>Regional & Test Modifiers</i></div>
+      <div class="product black" onclick="alert('Honestly you will never need this button lol')"><i>Regional & Test Modifiers</i></div>
       <div class="blank"></div>
     </div>
 
@@ -1516,6 +1516,72 @@ function showMoreCustomToppings() {
     <div class="blank"></div>
     <div class="product red" style="background: darkgreen; color: white;" onclick="restoreMainGrid()">Done</div>
     </div>
+  `;
+}
+
+function showMoreCustomDirections() {
+  const container = document.getElementById("main-grid");
+
+  previousMainGridHTML = container.innerHTML;
+
+  container.innerHTML = `
+    <div style="width: 100%; height: 4%; background: darkgreen; color: white; font-size: 1.1em; padding-top: 1%; padding-left: 1%; margin-bottom: 1%;">More Custom Directions</div>
+    <div class="product-row">
+    <div class="product black" onclick="addToCart('No', 'prefix')">No</div>
+    <div class="product black" onclick="addToCart('Sub', 'prefix')">Sub</div>
+    <div class="product blank"></div>
+    <div class="product black" onclick="addToCart('Extra', 'prefix')">Extra</div>
+    <div class="product black" onclick="addToCart('Light', 'prefix')">Light</div>
+    </div>
+
+    <div class="product-row">
+    <div class="product yellow" onclick="addToCart('Warm', 'modifier')">Warm</div>
+    <div class="product yellow" onclick="">Temperature</div>
+    <div class="product yellow" onclick="addToCart('Steamed', 'modifier')">Steamed</div>
+    <div class="product blank"></div>
+    <div class="product blank"></div>
+    </div>
+
+    <div class="product-row">
+    <div class="product silver" onclick="addToCart('Wet', 'modifier')">Wet</div>
+    <div class="product silver" onclick="addToCart('Dry', 'modifier')">Dry</div>
+    <div class="product blank"></div>
+    <div class="product blank"></div>
+    <div class="product yellow" onclick="">Alternate Handoff</div>
+    </div>
+
+    <div class="product-row">
+    <div class="product yellow" onclick="addToCart('Short Cup', 'modifier')">Short Cup</div>
+    <div class="product yellow" onclick="addToCart('Tall Cup', 'modifier')">Tall Cup</div>
+    <div class="product yellow" onclick="addToCart('Grande Cup', 'modifier')">Grande Cup</div>
+    <div class="product yellow" onclick="addToCart('Venti Cup', 'modifier')">Venti Cup</div>
+    <div class="product blank"></div>
+    </div>
+
+    <div class="product-row">
+    <div class="product yellow" onclick="addToCart('Double Cup', 'modifier')">Double Cup</div>
+    <div class="product yellow" onclick="addToCart('Flat Lid', 'modifier')">Flat Lid</div>
+    <div class="product yellow" onclick="addToCart('Dome Lid', 'modifier')">Dome Lid</div>
+    <div class="product yellow" onclick="addToCart('Nitro Lid', 'modifier')">Nitro Lid</div>
+    <div class="product blank"></div>
+    </div>
+
+    <div class="product-row">
+    <div class="product purple" onclick="addToCart('Dont Make', 'modifier')">Don't Make</div>
+    <div class="product purple" onclick="addToCart('Pour on Top', 'modifier')">Pour on Top</div>
+    <div class="product purple" onclick="addToCart('Upside Down', 'modifier')">Upside Down</div>
+    <div class="product purple" onclick="addToCart('Stirred', 'modifier')">Stirred</div>
+    <div class="product purple" onclick="addToCart('Blended', 'modifier')">Blended</div>
+    </div>
+
+    <div class="product-row">
+    <div class="product purple" onclick="addToCart('Double Blended', 'modifier')">Double Blended</div>
+    <div class="product purple" onclick="addToCart('On The Side', 'modifier')">On The Side</div>
+    <div class="product blank"></div>
+    <div class="product blank"></div>
+        <div class="product red" style="background: darkgreen; color: white;" onclick="restoreMainGrid()">Done</div>
+    </div>
+  </div>
   `;
 }
 
