@@ -36,6 +36,7 @@
       border-bottom: 2px solid #ccc; 
       padding-bottom: 8px; 
     }
+
     .cart-items { 
       flex: 1;
       overflow-y: auto;
@@ -96,7 +97,6 @@
 
     .next-btn {
       background: green;
-      height: 50px;
     }
 
     .next-btn:hover, .quantity-btn:hover {
@@ -326,6 +326,12 @@
       background-image: linear-gradient(to bottom, green, rgba(0, 128, 0, 0));
     }
 
+    #signature {
+      margin-top: 2%;
+      font-size: 10px;
+      text-align: center;
+    }
+
   </style>
 </head>
 <body>
@@ -336,6 +342,7 @@
       <div class="totals" id="totals">Total: $0.00</div>
       <button id="quantity-btn" class="quantity-btn">Quantity</button>
       <button id="voidButton" class="void-btn" onclick="voidSelection()">VOID</button>
+      <span id="signature">Designed by Hayley, for my friends at 2907 &hearts;</span>
     </div>
 
     <div id="quantity-modal" class="quantity-modal" style="display:none;">
@@ -413,7 +420,7 @@
       <button onclick="selectRightTab(this, 'syrup')">Syrup</button>
       <button onclick="selectRightTab(this, 'milk')">Milk</button>
       <button onclick="selectRightTab(this, 'custom')">Custom</button>
-      <button id="nextDrinkButton" class="next-btn" onclick="nextDrink()">Next Drink</button>
+      <button id="nextDrinkButton" class="next-btn" onclick="nextDrink(), tabReset()">Next Drink</button>
     </div>
   </div>
 
@@ -696,7 +703,7 @@
       </div>
 
       <div class="custom-row seasonal-row">
-        <div class="product bright-green" onclick="addToCart('Pumpkin Spice Creme')">Pumpkin<br>Spice<br>Creme</div>
+        <div class="product bright-green" onclick="addToCart('Seasonal Creme')">Seasonal<br>Creme</div>
         <div class="blank"></div>
         <div class="blank"></div>
         <div class="blank"></div>
@@ -905,7 +912,7 @@
     </div>
 
     <div class="product-row custom-row">
-      <div class="product light-yellow" onclick="addToCart('Add Lemonade','modifier')">Lemonade</div>
+      <div class="product light-yellow" onclick="addToCart('Lemonade','modifier')">Lemonade</div>
       <div class="product light-blue" onclick="addToCart('Mocha Drizzle','modifier')">Mocha Drizzle</div>
       <div class="product light-blue" onclick="addToCart('Line the Cup w/Mocha','modifier')">Line the Cup<br>w/Mocha</div>
       <div class="product light-blue" onclick="addToCart('Caramel Drizzle','modifier')">Caramel<br>Drizzle</div>
@@ -918,7 +925,7 @@
       <div class="product black coldFoamsButton" onclick="showColdFoamOptions()">Cold Foams</div>
       <div class="product teal" onclick="addToCart('Strawberry Inclusions','modifier')">Strawberry Inclusions</div>
       <div class="product teal" onclick="addToCart('Mango Dragonfruit Inclusions','modifier')">Mango Dragonfruit Inclusions</div>
-      <div class="product teal" onclick="addToCart('Raspberry Flavored Pearls','modifier')">Raspberry<br>Flavored Pearls</div>
+      <div class="blank"></div>
       <div class="blank"></div>
     </div>
 
@@ -1047,7 +1054,7 @@ function addToCart(item, type = "base") {
 
   else if (type === "prefix") {
     currentPrefix = item;
-    return; // wait for next modifier
+    return;
   }
 
   else if (type === "size" || type === "hotOrIced") {
@@ -1380,12 +1387,12 @@ function showColdFoamOptions() {
     <div style="width: 100%; height: 4%; background: darkgreen; color: white; font-size: 1.1em; padding-top: 1%; padding-left: 1%; margin-bottom: 1%;">Cold Foams</div>
     <!-- Row 1 -->
     <div class="custom-row">
-    <div class="product black" onclick="addToCart('No', 'modifier')">No</div>
-    <div class="product black" onclick="addToCart('Sub', 'modifier')">Sub</div>
+    <div class="product black" onclick="addToCart('No', 'prefix')">No</div>
+    <div class="product black" onclick="addToCart('Sub', 'prefix')">Sub</div>
     <div class="blank"></div>
     <div class="blank"></div>
-    <div class="product black" onclick="addToCart('Extra', 'modifier')">Extra</div>
-    <div class="product black" onclick="addToCart('Light', 'modifier')">Light</div>
+    <div class="product black" onclick="addToCart('Extra', 'prefix')">Extra</div>
+    <div class="product black" onclick="addToCart('Light', 'prefix')">Light</div>
     </div>
 
     <!-- Row 2 -->
@@ -1451,6 +1458,7 @@ function showMoreCustomToppings() {
   previousMainGridHTML = container.innerHTML;
 
   container.innerHTML = `
+    <div style="width: 100%; height: 4%; background: darkgreen; color: white; font-size: 1.1em; padding-top: 1%; padding-left: 1%; margin-bottom: 1%;">More Custom Toppings & Inclusions</div>
     <div class="custom-row">
     <div class="product black" onclick="addToCart('No', 'prefix')">No</div>
     <div class="product black" onclick="addToCart('Sub', 'prefix')">Sub</div>
@@ -1516,10 +1524,14 @@ function restoreMainGrid() {
   container.innerHTML = previousMainGridHTML;
 }
 
+function tabReset() {
+  selectRightTab(document.querySelector(".modifiers button"), "decafShots");
+}
+
 // Initialize
   window.onload = () => {
     selectTopTab(document.getElementById("drink"));
-    selectBottomTab(document.querySelector(".bottom-tabs button"), "brewed");
+    selectRightTab(document.querySelector(".modifiers button"), "decafShots");
     renderCart();
   };
 </script>
