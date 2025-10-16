@@ -7,7 +7,7 @@
   <style>
     html, body {
       margin: 0;
-      height: 100%;
+      height: 100vh;
       background: #f4f4f4;
     }
 
@@ -95,7 +95,7 @@
     }
 
     .next-btn {
-      background: #000;
+      background: green;
       height: 50px;
     }
 
@@ -322,6 +322,10 @@
       margin: 0 auto;
     }
 
+    #coldfoams {
+      background-image: linear-gradient(to bottom, green, rgba(0, 128, 0, 0));
+    }
+
   </style>
 </head>
 <body>
@@ -351,6 +355,34 @@
           <button class="num-btn">00</button>
           <button id="quantity-enter" class="num-btn">OK</button>
           <button id="clear-btn" onClick="clearQty()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="espressoShotsModal" class="quantity-modal" style="display:none;">
+      <div class="quantity-content">
+        <h2>Espresso Shots</h2>
+        <div class="quantity-grid">
+          <button class="num-btn" onclick="handleEspressoShots(1)">1</button>
+          <button class="num-btn" onclick="handleEspressoShots(2)">2</button>
+          <button class="num-btn" onclick="handleEspressoShots(3)">3</button>
+          <button class="num-btn" onclick="handleEspressoShots(4)">4</button>
+          <button class="num-btn" onclick="handleEspressoShots(5)">5</button>
+          <button class="num-btn" onclick="handleEspressoShots(6)">6</button>
+          <button class="num-btn" onclick="handleEspressoShots(7)">7</button>
+          <button class="num-btn" onclick="handleEspressoShots(8)">8</button>
+          <button class="num-btn" onclick="handleEspressoShots(9)">9</button>
+          <button class="num-btn" onclick="handleEspressoShots(10)">10</button>
+        </div>
+
+        <div style="margin-top:20px;">
+          <label for="customEspressoShots" style="display:block;margin-bottom:5px;">Custom:</label>
+          <input id="customEspressoShots" type="number" min="1" max="99" inputmode="numeric" oninput="validateShotInput(this)" placeholder="#" style="font-size:1.2em;padding:8px;width:80px;text-align:center;border-radius:6px;border:1px solid #ccc;">
+        </div>
+
+        <div style="margin-top:20px;">
+          <button class="num-btn" onclick="submitCustomEspressoShots()">OK</button>
+          <button class="num-btn" style="margin-left:10px;" onclick="closeEspressoShots()">Cancel</button>
         </div>
       </div>
     </div>
@@ -458,7 +490,7 @@
     const espressoButtons = `
       <div class="product-row">
         <div class="product purple" onclick="addToCart('Americano')">Americano</div>
-        <div class="product purple" onclick="addToCart('Espresso')">Espresso</div>
+        <div class="product purple" onclick="openEspressoShots('espresso')">Espresso</div>
         <div class="product purple" onclick="addToCart('Espresso Macchiato')">Espresso<br>Macchiato</div>
         <div class="product purple" onclick="addToCart('Espresso<br>Con Panna')">Espresso<br>Con Panna</div>
         <div class="blank"></div>
@@ -689,11 +721,11 @@
       </div>
 
       <div class="product-row">
-        <div class="product purple" onclick="addToCart('Single (Solo)', 'modifier')">Single (Solo)</div>
-        <div class="product purple" onclick="addToCart('Double (Doppio)', 'modifier')">Double (Doppio)</div>
-        <div class="product purple" onclick="addToCart('Triple', 'modifier')">Triple</div>
-        <div class="product purple" onclick="addToCart('Quad', 'modifier')">Quad</div>
-        <div class="product purple" onclick="addToCart('More Shots')">More Shots</div>
+        <div class="product purple" onclick="addToCart('Single Espresso')">Single (Solo)</div>
+        <div class="product purple" onclick="addToCart('Doppio Espresso')">Double (Doppio)</div>
+        <div class="product purple" onclick="addToCart('Triple Espresso')">Triple</div>
+        <div class="product purple" onclick="addToCart('Quad Espresso')">Quad</div>
+        <div class="product purple" onclick="openEspressoShots('moreShots')">More Shots</div>
       </div>
 
       <div class="product-row">
@@ -775,15 +807,15 @@
       <div class="blank"></div>
       <div class="blank"></div>
       <div class="blank"></div>
-      <div class="product black" onclick="addToCart('Extra')">Extra</div>
-      <div class="product black" onclick="addToCart('Light')">Light</div>
+      <div class="product black" onclick="addToCart('Extra', 'prefix')">Extra</div>
+      <div class="product black" onclick="addToCart('Light', 'prefix')">Light</div>
     </div>
 
     <div class="product-row">
       <div class="product light-blue" onclick="addToCart('Nonfat Milk','milk')">Nonfat Milk</div>
       <div class="blank"></div>
       <div class="blank"></div>
-      <div class="product light-blue" onclick="addToCart('Splash of Nonfat Milk','modifier')">Splash of Nonfat&nbsp;Milk</div>
+      <div class="product light-blue" onclick="addToCart('Nonfat Milk 1/2&quot;','modifier')">Splash of Nonfat&nbsp;Milk</div>
       <div class="blank"></div>
     </div>
 
@@ -791,46 +823,46 @@
       <div class="product light-blue" onclick="addToCart('2% Milk','milk')">2% Milk</div>
       <div class="product light-blue" onclick="addToCart('Whole Milk','milk')">Whole Milk</div>
       <div class="blank"></div>
-      <div class="product light-blue" onclick="addToCart('Splash of 2% Milk','modifier')">Splash of<br>2% Milk</div>
-      <div class="product light-blue" onclick="addToCart('Splash of Whole Milk','modifier')">Splash of Whole&nbsp;Milk</div>
+      <div class="product light-blue" onclick="addToCart('2% Milk 1/2&quot;','modifier')">Splash of<br>2% Milk</div>
+      <div class="product light-blue" onclick="addToCart('Whole Milk 1/2&quot;','modifier')">Splash of Whole&nbsp;Milk</div>
     </div>
 
     <div class="product-row">
       <div class="product light-yellow" onclick="addToCart('Soy Milk','milk')">Soy Milk</div>
       <div class="product light-yellow" onclick="addToCart('Oatmilk','milk')">Oatmilk</div>
       <div class="product light-yellow" onclick="addToCart('Protein Milk','milk')">Protein Milk</div>
-      <div class="product light-yellow" onclick="addToCart('Splash of Soy Milk','modifier')">Splash of<br>Soy Milk</div>
-      <div class="product light-yellow" onclick="addToCart('Splash of Oatmilk','modifier')">Splash of Oatmilk</div>
+      <div class="product light-yellow" onclick="addToCart('Soy Milk 1/2&quot;','modifier')">Splash of<br>Soy Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Oatmilk 1/2&quot;','modifier')">Splash of Oatmilk</div>
     </div>
 
     <div class="product-row">
       <div class="product light-yellow" onclick="addToCart('Coconut Milk','milk')">Coconut Milk</div>
       <div class="product light-yellow" onclick="addToCart('Almond Milk','milk')">Almond Milk</div>
       <div class="blank"></div>
-      <div class="product light-yellow" onclick="addToCart('Splash of Coconut Milk','modifier')">Splash of Coconut&nbsp;Milk</div>
-      <div class="product light-yellow" onclick="addToCart('Splash of Almond Milk','modifier')">Splash of Almond&nbsp;Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Coconut Milk 1/2&quot;','modifier')">Splash of Coconut&nbsp;Milk</div>
+      <div class="product light-yellow" onclick="addToCart('Almond Milk 1/2&quot;','modifier')">Splash of Almond&nbsp;Milk</div>
     </div>
 
     <div class="product-row">
-      <div class="product purple" onclick="addToCart('Half & Half (Breve)','milk')">Half & Half<br>(Breve)</div>
+      <div class="product purple" onclick="addToCart('Breve','milk')">Half & Half<br>(Breve)</div>
       <div class="product purple" onclick="addToCart('Heavy Cream','milk')">Heavy Cream</div>
       <div class="blank"></div>
-      <div class="product purple" onclick="addToCart('Splash of Half & Half Cream','modifier')">Splash of<br>Half & Half<br>Cream</div>
-      <div class="product purple" onclick="addToCart('Splash of Heavy Cream','modifier')">Splash of Heavy Cream</div>
+      <div class="product purple" onclick="addToCart('Half & Half 1/2&quot;','modifier')">Splash of<br>Half & Half<br>Cream</div>
+      <div class="product purple" onclick="addToCart('Heavy Cream 1/2&quot;','modifier')">Splash of Heavy Cream</div>
     </div>
 
     <div class="product-row">
       <div class="product light-blue" onclick="addToCart('Vanilla Sweet Cream','modifier')">Vanilla<br>Sweet Cream</div>
       <div class="product brown" onclick="addToCart('ND Vanilla Sweet Cream','modifier')">ND Vanilla Sweet Cream</div>
       <div class="blank"></div>
-      <div class="product light-blue" onclick="addToCart('Splash of Vanilla Sweet Cream','modifier')">Splash of Vanilla&nbsp;Sweet<br>Cream</div>
-      <div class="product brown" onclick="addToCart('Splash of ND Vanilla Sweet Cream','modifier')">Splash of<br>ND Vanilla Sweet<br>Cream</div>
+      <div class="product light-blue" onclick="addToCart('Vanilla Sweet Cream 1/2&quot;','modifier')">Splash of Vanilla&nbsp;Sweet<br>Cream</div>
+      <div class="product brown" onclick="addToCart('ND Vanilla Sweet Cream 1/2&quot;','modifier')">Splash of<br>ND Vanilla Sweet<br>Cream</div>
     </div>
 
     <div class="product-row">
       <div class="product light-blue" onclick="addToCart('Add Dairy','modifier')">Add Dairy</div>
       <div class="blank"></div><div class="blank"></div>
-      <div class="product black" onclick="addToCart('Regional & Test')">Regional & Test</div>
+      <div class="product black" onclick=""><i>Regional & Test</i></div>
       <div class="blank"></div>
     </div>
     `;
@@ -883,7 +915,7 @@
 
     <div class="product-row custom-row">
       <div class="product silver" onclick="addToCart('Foam','modifier')">Foam</div>
-      <div class="product black coldFoamsButton">Cold Foams</div>
+      <div class="product black coldFoamsButton" onclick="showColdFoamOptions()">Cold Foams</div>
       <div class="product teal" onclick="addToCart('Strawberry Inclusions','modifier')">Strawberry Inclusions</div>
       <div class="product teal" onclick="addToCart('Mango Dragonfruit Inclusions','modifier')">Mango Dragonfruit Inclusions</div>
       <div class="product teal" onclick="addToCart('Raspberry Flavored Pearls','modifier')">Raspberry<br>Flavored Pearls</div>
@@ -904,8 +936,8 @@
       <div class="product light-yellow" onclick="addToCart('Extra Hot','modifier')">Extra Hot</div>
       <div class="product light-yellow" onclick="addToCart('Personal Cup','modifier')">Personal Cup</div>
       <div class="product light-yellow" onclick="addToCart('For Here Cup','modifier')">For Here Cup</div>
-      <div class="product black" onclick="addToCart('More Custom<br>Toppings &<br>Inclusions')">More Custom<br>Toppings &<br>Inclusions</div>
-      <div class="product black" onclick="addToCart('More Custom Directions')"><i>More Custom Directions</i></div>
+      <div class="product black" onclick="showMoreCustomToppings()"><i>More Custom<br>Toppings &<br>Inclusions</i></div>
+      <div class="product black" onclick="showMoreCustomDirections()"><i>More Custom Directions</i></div>
     </div>
     `;
 
@@ -1038,20 +1070,21 @@ function addToCart(item, type = "base") {
   }
 
   else if (type === "modifier") {
-    const modifierName = currentPrefix ? `${currentPrefix} ${item}` : item;
-    if (!currentDrink.modifiers) currentDrink.modifiers = [];
-    if (!currentDrink.modifierQuantities) currentDrink.modifierQuantities = [];
+  const modifierName = currentPrefix ? `${currentPrefix} ${item}` : item;
+  if (!currentDrink.modifiers) currentDrink.modifiers = [];
+  if (!currentDrink.modifierQuantities) currentDrink.modifierQuantities = [];
 
-    const modIndex = currentDrink.modifiers.findIndex(mod => mod === modifierName);
-    if (modIndex !== -1) {
-      currentDrink.modifierQuantities[modIndex]++;
-    } else {
-      currentDrink.modifiers.push(modifierName);
-      currentDrink.modifierQuantities.push(1);
-    }
-
-    currentPrefix = null;
+  const modIndex = currentDrink.modifiers.findIndex(mod => mod === modifierName);
+  if (modIndex !== -1) {
+    currentDrink.modifierQuantities[modIndex]++;
+  } else {
+    currentDrink.modifiers.push(modifierName);
+    currentDrink.modifierQuantities.push(pendingQuantity || 1);
   }
+
+  currentPrefix = null;
+  pendingQuantity = null;
+}
 
   renderCart();
 }
@@ -1154,7 +1187,6 @@ function voidSelection() {
   renderCart();
 }
 
-
 function nextDrink() {
   if (currentDrink && currentDrink.base !== "[Default Drink]") {
     if (!cart.includes(currentDrink)) {
@@ -1199,7 +1231,7 @@ document.querySelectorAll(".num-btn").forEach(btn => {
 });
 
 function submitQuantity() {
-  const qty = parseInt(tempQuantity || "1", 10); // default to 1
+  const qty = parseInt(tempQuantity || "1", 10);
   const { drinkIndex, modifierIndex } = selectedCartItem;
 
   if (drinkIndex !== null && modifierIndex !== null) {
@@ -1208,7 +1240,7 @@ function submitQuantity() {
     drink.modifierQuantities[modifierIndex] = qty;
     renderCart();
   } else {
-    pendingQuantity = qty; // store as pending if modifier not yet selected
+    pendingQuantity = qty;
   }
 
   quantityModal.style.display = "none";
@@ -1217,6 +1249,271 @@ function submitQuantity() {
 function clearQty() {
   tempQuantity = "";
   quantityDisplay.textContent = "";
+}
+
+function updateBaseDrink(newBase) {
+  if (!currentDrink) {
+    return;
+  }
+
+  currentDrink.base = newBase;
+
+  const drinkIndex = cart.indexOf(currentDrink);
+  selectedCartItem = { drinkIndex, modifierIndex: null };
+  
+  renderCart();
+}
+
+// --- Shared Espresso Shots Modal ---
+let espressoShotsMode = null;
+
+const espressoShotsModal = document.getElementById("espressoShotsModal");
+const customEspressoShotsInput = document.getElementById("customEspressoShots");
+
+function openEspressoShots(mode) {
+  espressoShotsMode = mode;
+  espressoShotsModal.style.display = "flex";
+  customEspressoShotsInput.value = "";
+  customEspressoShotsInput.focus();
+}
+
+function closeEspressoShots() {
+  espressoShotsModal.style.display = "none";
+  espressoShotsMode = null;
+}
+
+function handleEspressoShots(num) {
+  processEspressoShots(num);
+  closeEspressoShots();
+}
+
+function submitCustomEspressoShots() {
+  const num = parseInt(customEspressoShotsInput.value, 10);
+  if (!num || num < 1) {
+    alert("Please enter a valid number of shots.");
+    return;
+  }
+  processEspressoShots(num);
+  closeEspressoShots();
+}
+
+function processEspressoShots(num) {
+  if (!currentDrink) {
+    const baseName = espressoShotsMode === "espresso" ? getEspressoBaseName(num) : "Espresso";
+    currentDrink = new Drink(baseName);
+    cart.push(currentDrink);
+  }
+
+  if (!currentDrink.modifiers) currentDrink.modifiers = [];
+  if (!currentDrink.modifierQuantities) currentDrink.modifierQuantities = [];
+
+  if (espressoShotsMode === "espresso") {
+    if (num >= 1 && num <= 4) {
+      updateBaseDrink(getEspressoBaseName(num));
+
+      const existingIndex = currentDrink.modifiers.findIndex(
+        m => m.toLowerCase() === "shots"
+      );
+      if (existingIndex !== -1) {
+        currentDrink.modifiers.splice(existingIndex, 1);
+        currentDrink.modifierQuantities.splice(existingIndex, 1);
+      }
+    } else {
+      updateBaseDrink("Espresso");
+      addOrUpdateShotsModifier(num);
+    }
+  } else if (espressoShotsMode === "moreShots") {
+    addOrUpdateShotsModifier(num);
+  }
+
+  renderCart();
+}
+
+// --- helper functions ---
+
+function getEspressoBaseName(num) {
+  const shotNames = {
+    1: "Solo Espresso",
+    2: "Doppio Espresso",
+    3: "Triple Espresso",
+    4: "Quad Espresso"
+  };
+  return shotNames[num] || "Espresso";
+}
+
+function addOrUpdateShotsModifier(num) {
+  let index = currentDrink.modifiers.findIndex(m => m.toLowerCase() === "shots");
+  if (index === -1) {
+    currentDrink.modifiers.push("Shots");
+    currentDrink.modifierQuantities.push(num);
+    index = currentDrink.modifiers.length - 1;
+  } else {
+    currentDrink.modifierQuantities[index] = num;
+  }
+
+  const drinkIndex = cart.indexOf(currentDrink);
+  selectedCartItem = { drinkIndex, modifierIndex: index };
+}
+
+function validateShotInput(input) {
+  input.value = input.value.replace(/\D/g, '');
+
+  if (parseInt(input.value, 10) > 99) {
+    input.value = '99';
+  }
+
+  if (input.value.startsWith('0')) {
+    input.value = input.value.replace(/^0+/, '');
+  }
+}
+
+let previousMainGridHTML = ""; // store current layout so we can restore it later
+
+function showColdFoamOptions() {
+  const container = document.getElementById("main-grid");
+
+  // Save current layout
+  previousMainGridHTML = container.innerHTML;
+
+  // Replace with Cold Foam options
+  container.innerHTML = `
+    <div style="width: 100%; height: 4%; background: darkgreen; color: white; font-size: 1.1em; padding-top: 1%; padding-left: 1%; margin-bottom: 1%;">Cold Foams</div>
+    <!-- Row 1 -->
+    <div class="custom-row">
+    <div class="product black" onclick="addToCart('No', 'modifier')">No</div>
+    <div class="product black" onclick="addToCart('Sub', 'modifier')">Sub</div>
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="product black" onclick="addToCart('Extra', 'modifier')">Extra</div>
+    <div class="product black" onclick="addToCart('Light', 'modifier')">Light</div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="custom-row">
+    <div class="product silver" onclick="addToCart('Vanilla Sweet Cream Cold Foam', 'modifier')">Vanilla Sweet Cream Cold Foam</div>
+    <div class="product silver" onclick="addToCart('Salted Caramel Cream Cold Foam', 'modifier')">Salted Caramel Cream Cold Foam</div>
+    <div class="product silver" onclick="addToCart('Chocolate Cream Cold Foam', 'modifier')">Chocolate Cream Cold Foam</div>
+    <div class="product silver" onclick="addToCart('Wt Chocolate Mocha Cold Foam', 'modifier')">Wt Chocolate Mocha Cold Foam</div>
+    <div class="product silver" onclick="addToCart('Matcha Cream Cold Foam', 'modifier')">Matcha Cream Cold Foam</div>
+    <div class="product silver" onclick="addToCart('Banana Cream Cold Foam', 'modifier')">Banana Cream Cold Foam</div>
+    </div>
+
+    <!-- Row 3 (blank) -->
+    <div class="custom-row">
+    ${'<div class="blank"></div>'.repeat(6)}
+    </div>
+
+    <!-- Row 4 -->
+    <div class="custom-row">
+    <div class="product purple" onclick="addToCart('ND Vanilla Sweet Cream Cold Foam', 'modifier')">ND Vanilla Sweet Cream Cold Foam</div>
+    <div class="product purple" onclick="addToCart('ND Salted Caramel Cream Cold Foam', 'modifier')">ND Salted Caramel Cream Cold Foam</div>
+    <div class="product purple" onclick="addToCart('ND Chocolate Cream Cold Foam', 'modifier')">ND Chocolate Cream Cold Foam</div>
+    <div class="product purple" onclick="addToCart('ND Matcha Cream Cold Foam', 'modifier')">ND Matcha Cream Cold Foam</div>
+    <div class="product purple" onclick="addToCart('ND Brown Sugar Cream Cold Foam', 'modifier')">ND Brown Sugar Cream Cold Foam</div>
+    <div class="product purple" onclick="addToCart('ND Strawberry Cream Cold Foam', 'modifier')">ND Strawberry Cream Cold Foam</div>
+    </div>
+
+    <!-- Row 5 -->
+    <div class="custom-row">
+    <div class="product brown" onclick="addToCart('Vanilla Protein Cold Foam', 'modifier')">Vanilla Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Chocolate Protein Cold Foam', 'modifier')">Chocolate Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Matcha Protein Cold Foam', 'modifier')">Matcha Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Salted Caramel Protein Cold Foam', 'modifier')">Salted Caramel Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Unsweet Protein Cold Foam', 'modifier')">Unsweet Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Brown Sugar Protein Cold Foam', 'modifier')">Brown Sugar Protein Cold Foam</div>
+    </div>
+
+    <!-- Row 6 -->
+    <div class="custom-row">
+    <div class="product brown" onclick="addToCart('Sugar Free Vanilla Protein Cold Foam', 'modifier')">Sugar Free Vanilla Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Banana Protein Cold Foam', 'modifier')">Banana Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Pecan Protein Cold Foam', 'modifier')">Pecan Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Pumpkin Protein Cold Foam', 'modifier')">Pumpkin Protein Cold Foam</div>
+    <div class="product brown" onclick="addToCart('Apple Crisp Protein Cold Foam', 'modifier')">Apple Crisp Protein Cold Foam</div>
+    <div class="blank"></div>
+    </div>
+
+    <!-- Row 7 -->
+    <div class="custom-row">
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="product red" style="background: darkgreen; color: white;" onclick="restoreMainGrid()">Done</div>
+    </div>
+  `;
+}
+
+function showMoreCustomToppings() {
+  const container = document.getElementById("main-grid");
+
+  previousMainGridHTML = container.innerHTML;
+
+  container.innerHTML = `
+    <div class="custom-row">
+    <div class="product black" onclick="addToCart('No', 'prefix')">No</div>
+    <div class="product black" onclick="addToCart('Sub', 'prefix')">Sub</div>
+    <div class="product blank"></div>
+    <div class="product blank"></div>
+    <div class="product black" onclick="addToCart('Extra', 'prefix')">Extra</div>
+    <div class="product black" onclick="addToCart('Light', 'prefix')">Light</div>
+    </div>
+
+    <div class="custom-row">
+    <div class="product purple" onclick="addToCart('Cinnamon Powder', 'modifier')">Cinnamon Powder</div>
+    ${'<div class="product blank"></div>'.repeat(5)}
+    </div>
+
+    <div class="custom-row">
+    <div class="product purple" onclick="addToCart('Peach Juice Blend', 'modifier')">Peach Juice Blend</div>
+    <div class="product brown" onclick="addToCart('Black Tea Base', 'modifier')">Black Tea Base</div>
+    <div class="product brown" onclick="addToCart('Green Tea Base', 'modifier')">Green Tea Base</div>
+    <div class="product brown" onclick="addToCart('Passion Tango Tea Base', 'modifier')">Passion Tango Tea Base</div>
+    <div class="product blank"></div>
+    <div class="product blank"></div>
+    </div>
+
+    <div class="custom-row">
+    <div class="product brown" onclick="addToCart('Strawberry Acai Refresher Base', 'modifier')">Strawberry Acai Refresher Base</div>
+    <div class="product brown" onclick="addToCart('Dragonfruit Refresher Base', 'modifier')">Dragonfruit Refresher Base</div>
+    ${'<div class="product blank"></div>'.repeat(4)}
+    </div>
+
+    <div class="custom-row">
+    <div class="product brown" onclick="addToCart('No Water + Extra Strawberry Base', 'modifier')">No Water + Extra Strawberry Base</div>
+    <div class="product brown" onclick="addToCart('No Water + Extra Mango Base', 'modifier')">No Water + Extra Mango Base</div>
+    ${'<div class="product blank"></div>'.repeat(4)}
+    </div>
+
+    <div class="custom-row">
+    <div class="product light-blue" onclick="addToCart('Cinnamon Dolce Topping', 'modifier')">Cinnamon Dolce Topping</div>
+    <div class="product light-blue" onclick="addToCart('Cookie Crumble Topping', 'modifier')">Cookie Crumble Topping</div>
+    <div class="product light-blue" onclick="addToCart('Caramel Sugar Topping', 'modifier')">Caramel Sugar Topping</div>
+    <div class="product light-blue" onclick="addToCart('No Topping', 'modifier')">No Topping</div>
+    <div class="product light-blue" onclick="addToCart('Pumpkin Spice Topping', 'modifier')">Pumpkin Spice Topping</div>
+    <div class="product blank"></div>
+    </div>
+
+    <div class="custom-row">
+    <div class="product light-blue" onclick="addToCart('Pecan Crunch Topping', 'modifier')">Pecan Crunch Topping</div>
+    ${'<div class="product blank"></div>'.repeat(5)}
+    </div>
+
+    <div class="custom-row">
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="blank"></div>
+    <div class="product red" style="background: darkgreen; color: white;" onclick="restoreMainGrid()">Done</div>
+    </div>
+  `;
+}
+
+function restoreMainGrid() {
+  const container = document.getElementById("main-grid");
+  container.innerHTML = previousMainGridHTML;
 }
 
 // Initialize
